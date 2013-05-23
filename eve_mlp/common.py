@@ -33,14 +33,14 @@ def encrypt(cleartext, key):
     iv = [ord(x) for x in os.urandom(16)]
 
     mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"], cypherkey, moo.aes.keySize["SIZE_128"], iv)
-    return [mode, orig_len, ciph, iv]
+    return json.dumps([mode, orig_len, ciph, iv]).replace(" ", "")
 
 
 def decrypt(data, key):
     moo = aes.AESModeOfOperation()
 
     cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
-    mode, orig_len, ciph, iv = data
+    mode, orig_len, ciph, iv = json.loads(data)
 
     cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
     return cleartext
@@ -48,6 +48,6 @@ def decrypt(data, key):
 
 if __name__ == "__main__":
     encrypted = encrypt("Hello!", "password")
-    print "Encrypted:", encrypted
+    print "Encrypted: %r" % encrypted
     decrypted = decrypt(encrypted, "password")
-    print "Decrypted:", decrypted
+    print "Decrypted: %r" % decrypted
