@@ -33,7 +33,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--evedir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("evedir"), metavar="DIR")
     parser.add_argument("--singularitydir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularitydir"), metavar="DIR")
-    parser.add_argument("--username", help="Username to log in with (can be used multiple times)", dest="usernames", action="append", default=config.get("users", {}).keys(), metavar="NAME")
+    parser.add_argument("--username", help="Username to log in with (Can be used multiple times, remembered across runs)", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME")
     parser.add_argument("--singularity", help="Launch singularity instead of tranquility", default=False, action="store_true")
     parser.add_argument("--dry", help="Dry-run (for MLP developers)", default=False, action="store_true")
     parser.add_argument('-v', '--verbose', help="Be more verbose (use more -v's for more verbosity)", action="count", default=0)
@@ -49,6 +49,9 @@ def parse_args(args):
 
     if args.singularitydir:
         config["singularitydir"] = args.singularitydir
+
+    if args.usernames:
+        config["usernames"] = args.usernames
 
     save_config(config)
 

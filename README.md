@@ -8,6 +8,7 @@ Features
 --------
 - Remember last-used eve install dir
 - Remember last-used singularity install dir
+- Remember usernames
 - Launch multiple alts at once
 
 
@@ -26,6 +27,9 @@ With a specific eve install:
 
 Launch multiple alts at once:
 	./venv/bin/eve-mlp --username Bob --username Fred
+
+Launch the last-used eve install with the last-used usernames:
+    ./venv/bin/eve-mlp
 ```
 
 Shameless Plug
@@ -36,7 +40,6 @@ Send ISK to Shish Tukay if you want to encourage more work on this :)
 TODO
 ----
 - pointy-clicky GUI, with functionality over fashion
-- remember username(s)
 - remember password(s)?
   - Have one master password to unlock passwords for all alts
 - nicer installation (install into $PATH)
