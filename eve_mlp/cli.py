@@ -27,9 +27,7 @@ def save_config(config):
         pass
 
 
-def parse_args(args):
-    config = load_config()
-
+def parse_args(args, config):
     parser = argparse.ArgumentParser()
     parser.add_argument("--evedir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("evedir"), metavar="DIR")
     parser.add_argument("--singularitydir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularitydir"), metavar="DIR")
@@ -39,9 +37,9 @@ def parse_args(args):
     parser.add_argument('-v', '--verbose', help="Be more verbose (use more -v's for more verbosity)", action="count", default=0)
     args = parser.parse_args(args)
 
-    logging.basicConfig(level=logging.WARNING)
-    l2log = logging.getLogger("eve_mlp")
-    l2log.setLevel(logging.WARNING - args.verbose * 10)
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)19.19s %(levelname)4.4s %(message)s")
+    module_log = logging.getLogger("eve_mlp")
+    module_log.setLevel(logging.WARNING - args.verbose * 10)
 
     # update remembered config
     if args.evedir:
@@ -52,8 +50,6 @@ def parse_args(args):
 
     if args.usernames:
         config["usernames"] = args.usernames
-
-    save_config(config)
 
     # move to the configured directory
     if args.singularity:
@@ -71,8 +67,32 @@ def parse_args(args):
     return args
 
 
+def log_config(args, config):
+    log.info("MLP Software:")
+    log.info("  Verbosity       : %s", args.verbose)
+    log.info("  Launching       : %s", "Singularity" if args.singularity else "EVE")
+    log.info("")
+
+    log.info("Eve Software:")
+    log.info("  Eve dir         : %s", args.evedir)
+    log.info("  Singularity dir : %s", args.singularitydir)
+    log.info("")
+
+    log.info("Users:")
+    passwords = config.get("passwords", {})
+    for username in args.usernames:
+        if username in passwords:
+            log.info("  %s (Password remembered)", username)
+        else:
+            log.info("  %s (No password)", username)
+
+
 def main(argv=sys.argv):
-    args = parse_args(argv[1:])
+    config = load_config()
+    args = parse_args(argv[1:], config)
+    save_config(config)
+
+    log_config(args, config)
 
     usernames = args.usernames or [raw_input("Username: "), ]
     un2pw = {}
