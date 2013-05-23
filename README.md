@@ -23,7 +23,7 @@ Run
 ---
 ```
 With a specific eve install:
-	eve-mlp --evedir /home/bob/Games/EVE
+	eve-mlp --eve-dir /home/bob/Games/EVE
 
 Launch multiple alts at once:
 	eve-mlp --username Bob --username Fred --username Jim --username Dave

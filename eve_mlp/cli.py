@@ -18,8 +18,8 @@ class UserError(Exception):
 
 def parse_args(args, config):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--evedir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("evedir"), metavar="DIR")
-    parser.add_argument("--singularitydir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularitydir"), metavar="DIR")
+    parser.add_argument("--eve-dir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("eve-dir"), metavar="DIR")
+    parser.add_argument("--singularity-dir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularity-dir"), metavar="DIR")
     parser.add_argument("--username", help="Username to log in with (Can be used multiple times, remembered across runs)", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME")
     parser.add_argument("--singularity", help="Launch singularity instead of tranquility", default=False, action="store_true")
     parser.add_argument("--save-passwords", help="Save passwords for all alts (encrypted with one master password)", default=False, action="store_true")
@@ -33,25 +33,25 @@ def parse_args(args, config):
     module_log.setLevel(logging.WARNING - args.verbose * 10)
 
     # update remembered config
-    if args.evedir:
-        config["evedir"] = args.evedir
+    if args.eve_dir:
+        config["eve-dir"] = args.eve_dir
 
-    if args.singularitydir:
-        config["singularitydir"] = args.singularitydir
+    if args.singularity_dir:
+        config["singularity-dir"] = args.singularity_dir
 
     if args.usernames:
         config["usernames"] = args.usernames
 
     # move to the configured directory
     if args.singularity:
-        if config.get("singularitydir"):
-            os.chdir(config["singularitydir"])
+        if config.get("singularity-dir"):
+            os.chdir(config["singularity-dir"])
     else:
-        if config.get("evedir"):
-            os.chdir(config["evedir"])
+        if config.get("eve-dir"):
+            os.chdir(config["eve-dir"])
 
     if not os.path.exists("bin/ExeFile.exe"):
-        raise UserError("Need to be run from the eve install dir, or use --evedir")
+        raise UserError("Need to be run from the eve install dir, or use --eve-dir")
 
     # return
     return args
