@@ -48,6 +48,7 @@ TODO
 ----
 - pointy-clicky GUI, with functionality over fashion
 - download & apply patches?
+  - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
 - windows port
 
 
