@@ -14,7 +14,11 @@ virtualenv venv
 Run
 ---
 ```
-./venv/bin/eve-mlp --evedir=/home/bob/Games/EVE
+With a specific eve install:
+	./venv/bin/eve-mlp --evedir /home/bob/Games/EVE
+
+Launch multiple alts at once:
+	./venv/bin/eve-mlp --username Bob --username Fred
 ```
 
 Shameless Plug
@@ -28,7 +32,6 @@ TODO
 - remember username(s)
 - remember password(s)?
   - Have one master password to unlock passwords for all alts
-  - Allow launching clients for all alts at once
 - nicer installation (install into $PATH)
 - download & apply patches?
 

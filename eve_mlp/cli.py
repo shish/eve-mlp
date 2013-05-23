@@ -13,6 +13,8 @@ log = logging.getLogger(__name__)
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--evedir", help="Point to the location of the eve install folder")
+    parser.add_argument("--username", help="Username to log in with (can be used multiple times)", action="append")
+    parser.add_argument("--dry", help="Dry-run (for mlp developers)", default=False, action="store_true")
     parser.add_argument('-v', '--verbose', action="count", default=0)
     args = parser.parse_args(args)
 
@@ -33,14 +35,24 @@ def parse_args(args):
 def main(argv=sys.argv):
     args = parse_args(argv[1:])
 
-    username = raw_input("Username: ")
-    password = getpass("Password: ")
+    usernames = args.username or [raw_input("Username: "), ]
+    un2pw = {}
+    for username in usernames:
+        if len(usernames) == 1:
+            password = getpass("Password: ")
+        else:
+            password = getpass("%s's Password: " % username)
+        un2pw[username] = password
 
-    try:
-        launch_token = do_login(username, password, args)
-        log.info("Launching eve")
-        os.system("wine bin/ExeFile.exe /ssoToken=" + launch_token)
-        return 0
-    except LoginFailed as e:
-        log.error("Login failed: %s", e)
-        return 1
+    for username, password in un2pw.items():
+        try:
+            if args.dry:
+                print "(Not) Logging in as", username
+                print "(Not) Launching eve from", os.getcwd()
+            else:
+                launch_token = do_login(username, password, args)
+                log.info("Launching eve")
+                os.system("wine bin/ExeFile.exe /ssoToken=" + launch_token)
+        except LoginFailed as e:
+            log.error("Login failed: %s", e)
+            return 1
