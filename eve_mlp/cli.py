@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import argparse
+import subprocess
 from getpass import getpass
 
 from .login import do_login, LoginFailed
@@ -111,7 +112,7 @@ def run_mlp(args):
             else:
                 launch_token = do_login(username, password, args)
                 log.info("Launching eve")
-                os.system("wine bin/ExeFile.exe /ssoToken=" + launch_token)
+                subprocess.Popen("wine bin/ExeFile.exe /ssoToken=" + launch_token, shell=True)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
