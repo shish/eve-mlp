@@ -7,6 +7,7 @@ A portable (cross-platform) EVE Online launcher
 Features
 --------
 - Remember last-used eve install dir
+- Remember last-used singularity install dir
 - Launch multiple alts at once
 
 

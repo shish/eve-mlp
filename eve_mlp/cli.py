@@ -31,33 +31,47 @@ def parse_args(args):
     config = load_config()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--evedir", help="Point to the location of the eve install folder", default=config.get("evedir"))
-    parser.add_argument("--username", help="Username to log in with (can be used multiple times)", action="append")
-    parser.add_argument("--dry", help="Dry-run (for mlp developers)", default=False, action="store_true")
-    parser.add_argument('-v', '--verbose', action="count", default=0)
+    parser.add_argument("--evedir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("evedir"), metavar="DIR")
+    parser.add_argument("--singularitydir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularitydir"), metavar="DIR")
+    parser.add_argument("--username", help="Username to log in with (can be used multiple times)", dest="usernames", action="append", default=config.get("users", {}).keys(), metavar="NAME")
+    parser.add_argument("--singularity", help="Launch singularity instead of tranquility", default=False, action="store_true")
+    parser.add_argument("--dry", help="Dry-run (for MLP developers)", default=False, action="store_true")
+    parser.add_argument('-v', '--verbose', help="Be more verbose (use more -v's for more verbosity)", action="count", default=0)
     args = parser.parse_args(args)
 
     logging.basicConfig(level=logging.WARNING)
-    l2log = logging.getLogger("launcher2")
+    l2log = logging.getLogger("eve_mlp")
     l2log.setLevel(logging.WARNING - args.verbose * 10)
 
+    # update remembered config
     if args.evedir:
         config["evedir"] = args.evedir
-        os.chdir(args.evedir)
+
+    if args.singularitydir:
+        config["singularitydir"] = args.singularitydir
+
+    save_config(config)
+
+    # move to the configured directory
+    if args.singularity:
+        if config.get("singularitydir"):
+            os.chdir(config["singularitydir"])
+    else:
+        if config.get("evedir"):
+            os.chdir(config["evedir"])
 
     if not os.path.exists("bin/ExeFile.exe"):
         logging.error("Need to be run from the eve install dir, or use --evedir")
         return 1
 
-    save_config(config)
-
+    # return
     return args
 
 
 def main(argv=sys.argv):
     args = parse_args(argv[1:])
 
-    usernames = args.username or [raw_input("Username: "), ]
+    usernames = args.usernames or [raw_input("Username: "), ]
     un2pw = {}
     for username in usernames:
         if len(usernames) == 1:
