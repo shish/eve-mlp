@@ -2,17 +2,36 @@ import os
 import sys
 import logging
 import argparse
+import json
 from getpass import getpass
 
 from .login import do_login, LoginFailed
 
 
 log = logging.getLogger(__name__)
+config_path = os.path.expanduser("~/.config/eve-mlp.conf")
+
+
+def load_config():
+    try:
+        config = json.loads(file(config_path).read())
+    except:
+        config = {}
+    return config
+
+
+def save_config(config):
+    try:
+        file(config_path, "w").write(json.dumps(config))
+    except:
+        pass
 
 
 def parse_args(args):
+    config = load_config()
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--evedir", help="Point to the location of the eve install folder")
+    parser.add_argument("--evedir", help="Point to the location of the eve install folder", default=config.get("evedir"))
     parser.add_argument("--username", help="Username to log in with (can be used multiple times)", action="append")
     parser.add_argument("--dry", help="Dry-run (for mlp developers)", default=False, action="store_true")
     parser.add_argument('-v', '--verbose', action="count", default=0)
@@ -23,11 +42,14 @@ def parse_args(args):
     l2log.setLevel(logging.WARNING - args.verbose * 10)
 
     if args.evedir:
+        config["evedir"] = args.evedir
         os.chdir(args.evedir)
 
     if not os.path.exists("bin/ExeFile.exe"):
         logging.error("Need to be run from the eve install dir, or use --evedir")
         return 1
+
+    save_config(config)
 
     return args
 
