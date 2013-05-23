@@ -2,12 +2,10 @@ import os
 import sys
 import logging
 import argparse
-import subprocess
-import platform
 from getpass import getpass
 
 from .login import do_login, LoginFailed
-from .common import load_config, save_config, encrypt, decrypt
+from .common import load_config, save_config, encrypt, decrypt, launch
 
 
 log = logging.getLogger(__name__)
@@ -118,28 +116,6 @@ def run_mlp(args):
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
-
-
-def launch(launch_token, args):
-    log.info("Launching eve")
-    cmd = []
-
-    # platform specific pre-binary bits
-    if args.dry:
-        cmd.append("echo")
-    if platform.system() == "Linux":
-        cmd.append("wine")
-
-    # run the app
-    cmd.append(os.path.join("bin", "ExeFile.exe"))
-    cmd.append("/ssoToken=" + launch_token)
-
-    # app flags
-    if args.singularity:
-        cmd.append("/server:Singularity")
-
-    # go!
-    subprocess.Popen(" ".join(cmd), shell=True)
 
 
 def main(argv=sys.argv):

@@ -2,6 +2,8 @@ import os
 import json
 import hashlib
 import logging
+import subprocess
+import platform
 import eve_mlp.aes as aes
 
 
@@ -49,6 +51,29 @@ def decrypt(data, key):
 
     cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
     return cleartext
+
+
+def launch(launch_token, args):
+    log.info("Launching eve")
+    cmd = []
+
+    # platform specific pre-binary bits
+    if args.dry:
+        cmd.append("echo")
+    if platform.system() == "Linux":
+        cmd.append("wine")
+
+    # run the app
+    cmd.append(os.path.join("bin", "ExeFile.exe"))
+    cmd.append("/ssoToken=" + launch_token)
+    cmd.append("/noconsole")
+
+    # app flags
+    if args.singularity:
+        cmd.append("/server:Singularity")
+
+    # go!
+    return subprocess.Popen(" ".join(cmd), shell=True)
 
 
 if __name__ == "__main__":
