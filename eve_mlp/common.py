@@ -17,7 +17,7 @@ def load_config():
     try:
         config.update(json.loads(file(config_path).read()))
     except:
-        logger.debug("Couldn't load config file:", exc_info=True)
+        log.debug("Couldn't load config file:", exc_info=True)
     return config
 
 
@@ -28,7 +28,7 @@ def save_config(config):
             os.makedirs(config_dir)
         file(config_path, "w").write(json.dumps(config, indent=4))
     except:
-        logger.debug("Couldn't save config file:", exc_info=True)
+        log.debug("Couldn't save config file:", exc_info=True)
 
 
 def encrypt(cleartext, key):

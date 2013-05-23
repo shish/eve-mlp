@@ -53,6 +53,7 @@ def submit_login(action_url, username, password):
     auth_result = requests.post(
         action_url,
         data={"UserName": username, "Password": password},
+        verify=False,
     )
 
     if "<title>License Agreement Update</title>" in auth_result.text:
@@ -67,7 +68,10 @@ def submit_login(action_url, username, password):
 def get_launch_token(access_token):
     log.info("Fetching launch token")
 
-    response = requests.get("https://login.eveonline.com/launcher/token?accesstoken="+access_token)
+    response = requests.get(
+        "https://login.eveonline.com/launcher/token?accesstoken="+access_token,
+        verify=False,
+    )
     matches = re.search("#access_token=([^&]+)", response.url)
     if not matches:
         raise LoginFailed("No launch token?")

@@ -131,7 +131,7 @@ def launch(launch_token, args):
         cmd.append("wine")
 
     # run the app
-    cmd.append("bin/ExeFile.exe")
+    cmd.append(os.path.join("bin", "ExeFile.exe"))
     cmd.append("/ssoToken=" + launch_token)
 
     # app flags
