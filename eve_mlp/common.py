@@ -1,10 +1,12 @@
 import os
 import json
 import hashlib
+import logging
 import eve_mlp.aes as aes
 
 
 config_path = os.path.expanduser("~/.config/eve-mlp.conf")
+log = logging.getLogger(__name__)
 
 
 def load_config():
@@ -15,15 +17,18 @@ def load_config():
     try:
         config.update(json.loads(file(config_path).read()))
     except:
-        pass
+        logger.debug("Couldn't load config file:", exc_info=True)
     return config
 
 
 def save_config(config):
     try:
+        config_dir = os.path.dirname(config_path)
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
         file(config_path, "w").write(json.dumps(config, indent=4))
     except:
-        pass
+        logger.debug("Couldn't save config file:", exc_info=True)
 
 
 def encrypt(cleartext, key):
