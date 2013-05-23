@@ -17,6 +17,10 @@ Run
 ./venv/bin/eve-mlp --evedir=/home/bob/Games/EVE
 ```
 
+Shameless Plug
+--------------
+Send ISK to Shish Tukay if you want to encourage more work on this :)
+
 TODO
 ----
 - pointy-clicky GUI, with functionality over fashion
