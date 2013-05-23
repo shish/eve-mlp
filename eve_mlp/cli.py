@@ -111,11 +111,30 @@ def run_mlp(args):
                 print "(Not) Launching eve from", os.getcwd()
             else:
                 launch_token = do_login(username, password, args)
-                log.info("Launching eve")
-                subprocess.Popen("wine bin/ExeFile.exe /ssoToken=" + launch_token, shell=True)
+                launch(launch_token, args)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
+
+
+def launch(launch_token, args):
+    log.info("Launching eve")
+    cmd = []
+
+    # platform specific pre-binary bits
+    if platform.system() == "Linux":
+        cmd.extend(["wine"])
+
+    # run the app
+    cmd.extend(["bin/ExeFile.exe", "/ssoToken=" + launch_token])
+
+    # app flags
+    if args.singularity:
+        cmd.extend(["/server:Singularity"])
+
+    # go!
+    subprocess.Popen(" ".join(cmd), shell=True)
+
 
 def main(argv=sys.argv):
     try:
