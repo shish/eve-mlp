@@ -12,6 +12,10 @@ from .common import load_config, save_config, encrypt, decrypt
 log = logging.getLogger(__name__)
 
 
+class UserError(Exception):
+    pass
+
+
 def parse_args(args, config):
     parser = argparse.ArgumentParser()
     parser.add_argument("--evedir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("evedir"), metavar="DIR")
@@ -47,8 +51,7 @@ def parse_args(args, config):
             os.chdir(config["evedir"])
 
     if not os.path.exists("bin/ExeFile.exe"):
-        logging.error("Need to be run from the eve install dir, or use --evedir")
-        return 1
+        raise UserError("Need to be run from the eve install dir, or use --evedir")
 
     # return
     return args
@@ -141,3 +144,5 @@ def main(argv=sys.argv):
         run_mlp(argv[1:])
     except KeyboardInterrupt:
         pass
+    except UserError as e:
+        print e
