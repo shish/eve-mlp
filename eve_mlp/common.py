@@ -1,5 +1,7 @@
 import os
 import json
+import hashlib
+import eve_mlp.aes as aes
 
 
 config_path = os.path.expanduser("~/.config/eve-mlp.conf")
@@ -24,9 +26,28 @@ def save_config(config):
         pass
 
 
-def encrypt(data, key):
-    return data
+def encrypt(cleartext, key):
+    moo = aes.AESModeOfOperation()
+
+    cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
+    iv = [ord(x) for x in os.urandom(16)]
+
+    mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"], cypherkey, moo.aes.keySize["SIZE_128"], iv)
+    return [mode, orig_len, ciph, iv]
 
 
 def decrypt(data, key):
-    return data
+    moo = aes.AESModeOfOperation()
+
+    cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
+    mode, orig_len, ciph, iv = data
+
+    cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
+    return cleartext
+
+
+if __name__ == "__main__":
+    encrypted = encrypt("Hello!", "password")
+    print "Encrypted:", encrypted
+    decrypted = decrypt(encrypted, "password")
+    print "Decrypted:", decrypted

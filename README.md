@@ -48,7 +48,10 @@ TODO
 
 Thanks
 ------
-Made using Artefact2's PHP launcher as a reference:
+Made using Artefact2's PHP launcher as a reference for CCP's SSO URLs:
 
 https://github.com/Artefact2/eve-launcher
 
+Includes a copy of SlowAES, a pure-python AES implementation:
+
+https://code.google.com/p/slowaes/

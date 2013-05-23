@@ -73,9 +73,9 @@ def log_config(args, config):
             log.info("  %s (No password)", username)
 
 
-def main(argv=sys.argv):
+def run_mlp(args):
     config = load_config()
-    args = parse_args(argv[1:], config)
+    args = parse_args(args, config)
 
     log_config(args, config)
 
@@ -115,3 +115,9 @@ def main(argv=sys.argv):
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
+
+def main(argv=sys.argv):
+    try:
+        run_mlp(argv[1:])
+    except KeyboardInterrupt:
+        pass
