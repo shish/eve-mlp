@@ -6,10 +6,14 @@ config_path = os.path.expanduser("~/.config/eve-mlp.conf")
 
 
 def load_config():
+    config = {
+        "usernames": [],
+        "passwords": {},
+    }
     try:
-        config = json.loads(file(config_path).read())
+        config.update(json.loads(file(config_path).read()))
     except:
-        config = {}
+        pass
     return config
 
 
@@ -18,3 +22,11 @@ def save_config(config):
         file(config_path, "w").write(json.dumps(config, indent=4))
     except:
         pass
+
+
+def encrypt(data, key):
+    return data
+
+
+def decrypt(data, key):
+    return data

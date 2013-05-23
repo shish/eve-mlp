@@ -5,7 +5,7 @@ import argparse
 from getpass import getpass
 
 from .login import do_login, LoginFailed
-from .common import load_config, save_config
+from .common import load_config, save_config, encrypt, decrypt
 
 
 log = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ def parse_args(args, config):
     parser.add_argument("--singularitydir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularitydir"), metavar="DIR")
     parser.add_argument("--username", help="Username to log in with (Can be used multiple times, remembered across runs)", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME")
     parser.add_argument("--singularity", help="Launch singularity instead of tranquility", default=False, action="store_true")
+    parser.add_argument("--save-passwords", help="Save passwords for all alts (encrypted with one master password)", default=False, action="store_true")
     parser.add_argument("-d", "--dry", help="Dry-run (for MLP developers)", default=False, action="store_true")
     parser.add_argument("-v", "--verbose", help="Be more verbose (use more -v's for more verbosity)", action="count", default=0)
     parser.add_argument("-f", "--forgetful", help="Don't remember settings", default=False, action="store_true")
@@ -75,19 +76,32 @@ def log_config(args, config):
 def main(argv=sys.argv):
     config = load_config()
     args = parse_args(argv[1:], config)
-    if not args.forgetful:
-        save_config(config)
 
     log_config(args, config)
 
     usernames = args.usernames or [raw_input("Username: "), ]
+
+    master_pass = None
+    if args.save_passwords:
+        master_pass = getpass("Enter master password: ")
+
     un2pw = {}
     for username in usernames:
-        if len(usernames) == 1:
-            password = getpass("Password: ")
+        if username in config.get("passwords", {}):
+            if not master_pass:
+                master_pass = getpass("Enter master password: ")
+            password = decrypt(config["passwords"][username], master_pass)
         else:
-            password = getpass("%s's Password: " % username)
+            if len(usernames) == 1:
+                password = getpass("Password: ")
+            else:
+                password = getpass("%s's Password: " % username)
+            if args.save_passwords:
+                config["passwords"][username] = encrypt(password, master_pass)
         un2pw[username] = password
+
+    if not args.forgetful:
+        save_config(config)
 
     for username, password in un2pw.items():
         try:
