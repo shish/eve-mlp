@@ -22,7 +22,7 @@ def load_config():
 
 def save_config(config):
     try:
-        file(config_path, "w").write(json.dumps(config))
+        file(config_path, "w").write(json.dumps(config, indent=4))
     except:
         pass
 
