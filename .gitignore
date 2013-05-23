@@ -1,5 +1,8 @@
 *.py[cod]
 *.un~
+*.bat
+*.spec
+*.log
 
 # C extensions
 *.so
