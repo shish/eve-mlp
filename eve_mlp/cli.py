@@ -3,6 +3,7 @@ import sys
 import logging
 import argparse
 import subprocess
+import platform
 from getpass import getpass
 
 from .login import do_login, LoginFailed
@@ -64,8 +65,8 @@ def log_config(args, config):
     log.info("")
 
     log.info("Eve Software:")
-    log.info("  Eve dir         : %s", args.evedir)
-    log.info("  Singularity dir : %s", args.singularitydir)
+    log.info("  Eve dir         : %s", args.eve_dir)
+    log.info("  Singularity dir : %s", args.singularity_dir)
     log.info("")
 
     log.info("Users:")
@@ -110,11 +111,10 @@ def run_mlp(args):
     for username, password in un2pw.items():
         try:
             if args.dry:
-                print "(Not) Logging in as", username
-                print "(Not) Launching eve from", os.getcwd()
+                launch_token = "not-a-real-token"
             else:
                 launch_token = do_login(username, password, args)
-                launch(launch_token, args)
+            launch(launch_token, args)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
@@ -125,15 +125,18 @@ def launch(launch_token, args):
     cmd = []
 
     # platform specific pre-binary bits
+    if args.dry:
+        cmd.append("echo")
     if platform.system() == "Linux":
-        cmd.extend(["wine"])
+        cmd.append("wine")
 
     # run the app
-    cmd.extend(["bin/ExeFile.exe", "/ssoToken=" + launch_token])
+    cmd.append("bin/ExeFile.exe")
+    cmd.append("/ssoToken=" + launch_token)
 
     # app flags
     if args.singularity:
-        cmd.extend(["/server:Singularity"])
+        cmd.append("/server:Singularity")
 
     # go!
     subprocess.Popen(" ".join(cmd), shell=True)
