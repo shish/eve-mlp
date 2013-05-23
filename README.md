@@ -50,6 +50,7 @@ TODO
 - download & apply patches?
   - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
 - windows port
+- wine flags management / dll overrides / etc (though it actually all works out of the box for me...)
 
 
 Thanks
