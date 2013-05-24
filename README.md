@@ -16,13 +16,13 @@ Setup
 ```
 virtualenv venv
 ./venv/bin/pip install -e ./
-sudo ln -s `pwd`/venv/bin/eve-mlp /usr/local/bin
+sudo ln -s `pwd`/venv/bin/eve-* /usr/local/bin/
 ```
 
 Run
 ---
 ```
-With a specific eve install:
+Command line with a specific eve install:
 	eve-mlp --eve-dir /home/bob/Games/EVE
 
 Launch multiple alts at once:
@@ -37,6 +37,8 @@ Store the passwords for known usernames, but don't actually launch eve:
 Launch all of your alts in one go, only needing to enter one master password:
     eve-mlp
 
+Run the gui (extremely non-functional beta right now):
+	eve-gmlp
 ```
 
 Shameless Plug
@@ -49,7 +51,6 @@ TODO
 - pointy-clicky GUI, with functionality over fashion
 - download & apply patches?
   - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
-- windows port
 - wine flags management / dll overrides / etc (though it actually all works out of the box for me...)
 
 
