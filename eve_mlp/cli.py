@@ -76,19 +76,14 @@ def log_config(args, config):
             log.info("  %s (No password)", username)
 
 
-def run_mlp(args):
-    config = load_config()
-    args = parse_args(args, config)
-
-    log_config(args, config)
-
+def get_logins(args, config):
     usernames = args.usernames or [raw_input("Username: "), ]
 
     master_pass = None
     if args.save_passwords:
         master_pass = getpass("Enter master password: ")
 
-    un2pw = {}
+    logins = {}
     for username in usernames:
         password = None
 
@@ -105,12 +100,21 @@ def run_mlp(args):
             if args.save_passwords:
                 config["passwords"][username] = encrypt(password, master_pass)
 
-        un2pw[username] = password
+        logins[username] = password
+
+    return logins
+
+
+def run_mlp(args):
+    config = load_config()
+    args = parse_args(args, config)
+    log_config(args, config)
+    logins = get_logins(args, config)
 
     if not args.forgetful:
         save_config(config)
 
-    for username, password in un2pw.items():
+    for username, password in logins.items():
         try:
             if args.dry:
                 launch_token = "not-a-real-token"
