@@ -89,12 +89,9 @@ class LauncherPanel(wx.Panel):
 
         box = wx.StaticBoxSizer(wx.StaticBox(self, label="Character List"), wx.VERTICAL)
 
-        char_list = wx.grid.Grid(parent, -1)
+        char_list = wx.grid.Grid(self, -1)
         self.char_table = CharTable(char_list, parent.config)
         char_list.SetTable(self.char_table)
-        char_list.SetColLabelValue(0, "Name")
-        char_list.SetColLabelValue(1, "Password")
-        char_list.SetColLabelValue(2, "Action")
         launch_all = wx.Button(self, -1, "Launch All")
 
         box.Add(char_list, 1)
