@@ -3,6 +3,8 @@ import logging
 
 import wx
 import wx.grid
+import wx.html
+import requests
 from wx.lib.mixins.inspection import InspectableApp
 
 from eve_mlp.common import *
@@ -121,7 +123,7 @@ class LauncherPanel(wx.Panel):
         launch_all = wx.Button(self, -1, "Launch All")
 
         box.Add(char_list, 1)
-        box.Add(launch_all, 0)
+        box.Add(launch_all, 0, wx.EXPAND)
 
         self.Bind(wx.EVT_BUTTON, self.OnLaunchAll, launch_all)
 
@@ -142,10 +144,19 @@ class NewsPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.config = config
 
+        nb = wx.Notebook(self)
+
+        self.html = wx.html.HtmlWindow(nb)
+        try:
+            # TODO: async load
+            data = requests.get("http://code.shishnet.org/eve-mlp/news.html").text
+        except Exception as e:
+            data = "Couldn't get news: %s" % str(e)
+        self.html.SetPage(data)
+        nb.AddPage(self.html, "MLP")
+
         box = wx.StaticBoxSizer(wx.StaticBox(self, label="News"), wx.VERTICAL)
-
-        # box.Add()
-
+        box.Add(nb, 1, wx.EXPAND)
         self.SetSizer(box)
         self.Layout()
 

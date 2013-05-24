@@ -14,9 +14,10 @@ Features
 Setup
 -----
 ```
-virtualenv venv
-./venv/bin/pip install -e ./
-sudo ln -sf `pwd`/venv/bin/eve-* /usr/local/bin/
+$ sudo apt-get install python-requests python-wxgtk2.8    # debian / ubuntu
+$ sudo yum install python-requests wxPython               # red hat / fedora / centos
+
+$ sudo pip install -e ./
 ```
 
 Run
