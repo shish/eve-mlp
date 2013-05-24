@@ -7,6 +7,7 @@ import wx.html
 import requests
 
 from eve_mlp.common import *
+from eve_mlp.login import do_login
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
@@ -91,7 +92,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self, parent):
         self.config = load_config()
-        self.master_password = None
+        self.master_pass = None
         self.server = "tranquility"
 
         if self.config["passwords"]:
@@ -118,9 +119,22 @@ class MainFrame(wx.Frame):
 
         if username and password:
             from mock import Mock
-            #token = do_login(username, password)
-            token = "TOKEN"
-            launch(token, Mock(dry=True, singularity=False))
+            if self.server == "tranquility":
+                di = self.config.get("eve-dir")
+                singularity = False
+            else:
+                di = self.config.get("singularity-dir")
+                singularity = True
+
+            if di and os.path.exists(di):
+                os.chdir(di)
+
+            if os.path.exists(os.path.join("bin", "ExeFile.exe")):
+                token = do_login(username, password)
+                #token = "TOKEN"
+                launch(token, Mock(dry=False, singularity=singularity))
+            else:
+                print "Not in the right directory"
 
     def OnClose(self, evt):
         self.Close()
@@ -139,6 +153,11 @@ class MainFrame(wx.Frame):
 
     def OnToggleRememberPasswords(self, evt):
         self.remember_passwords = evt.GetEventObject().IsChecked(2020)
+        if not self.master_pass:
+            ped = wx.PasswordEntryDialog(self, "Set Master Password")
+            ped.ShowModal()
+            self.master_pass = ped.GetValue()
+            ped.Destroy()
 
     def OnAbout(self, evt):
         import eve_mlp.common as common

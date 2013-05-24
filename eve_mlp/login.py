@@ -14,7 +14,7 @@ class LoginFailed(Exception):
     pass
 
 
-def do_login(username, password, args):
+def do_login(username, password):
     log.debug("Using cached SSO login URL")
     #login_action_url = get_login_action_url(LAUNCHER_INFO)
     login_action_url = "https://login.eveonline.com/Account/LogOn?" + \

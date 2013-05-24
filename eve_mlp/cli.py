@@ -135,7 +135,7 @@ def run_mlp(args):
             if args.dry:
                 launch_token = "not-a-real-token"
             else:
-                launch_token = do_login(username, password, args)
+                launch_token = do_login(username, password)
             launch(launch_token, args)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
