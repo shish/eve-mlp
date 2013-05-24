@@ -9,6 +9,9 @@ Features
 - Remember usernames
 - Remember passwords (one master password for several alts)
 - Launch multiple alts at once
+- Systray icon
+  - Double click to hide main window
+  - Right click -> launch character
 
 
 Setup
@@ -38,7 +41,7 @@ Store the passwords for known usernames, but don't actually launch eve:
 Launch all of your alts in one go, only needing to enter one master password:
     eve-mlp
 
-Run the gui (extremely non-functional beta right now):
+Run the gui:
 	eve-gmlp
 ```
 
@@ -49,14 +52,9 @@ Send ISK to Shish Tukay if you want to encourage more work on this :)
 
 TODO
 ----
-- pointy-clicky GUI, with functionality over fashion
 - download & apply patches?
   - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
 - wine flags management / dll overrides / etc (though it actually all works out of the box for me...)
-- systray support
-  - click icon -> get list of characters -> launch
-  - may need to use a more advanced toolkit that Tk
-    - wx is generally better at everything, but more pain to set up for the developer
 - unit tests
 
 

@@ -9,6 +9,10 @@ from wx.lib.mixins.inspection import InspectableApp
 
 from eve_mlp.common import *
 
+#
+#  20XX - menu IDs
+#  30XX - launch account #XX
+#
 
 log = logging.getLogger(__name__)
 
@@ -110,6 +114,7 @@ class CharTable(wx.grid.PyGridTableBase):
 class LauncherPanel(wx.Panel):
     def __init__(self, parent, config):
         wx.Panel.__init__(self, parent)
+        self.parent = parent
         self.config = config
 
         box = wx.StaticBoxSizer(wx.StaticBox(self, label="Character List"), wx.VERTICAL)
@@ -131,12 +136,8 @@ class LauncherPanel(wx.Panel):
         self.Layout()
 
     def OnLaunchAll(self, evt):
-        for username, password in self.config["passwords"].items():
-            if username and password:
-                from mock import Mock
-                #token = do_login(username, password)
-                token = "TOKEN"
-                launch(token, Mock(dry=True, singularity=False))
+        for username in self.config["usernames"]:
+            self.parent.launch(username)
 
 
 class NewsPanel(wx.Panel):
@@ -164,6 +165,41 @@ class NewsPanel(wx.Panel):
         box.Add(self.nb, 1, wx.EXPAND)
         self.SetSizer(box)
         self.Layout()
+
+
+class Icon(wx.TaskBarIcon):
+    def __init__(self, parent):
+        wx.TaskBarIcon.__init__(self)
+        self.parent = parent
+        self.config = parent.config
+        self.SetIcon(wx.Icon(resource("icon.ico"), wx.BITMAP_TYPE_ICO), "Mobile Launcher Platform")
+        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
+        self.CreateMenu()
+
+    def CreateMenu(self):
+        self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
+        self.menu = wx.Menu()
+
+        for n, username in enumerate(self.config["usernames"]):
+            m_launch = self.menu.Append(3000 + n, 'Launch '+username)
+            self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch)
+
+        self.menu.AppendSeparator()
+        m_exit = self.menu.Append(wx.ID_EXIT, 'E&xit')
+
+        self.Bind(wx.EVT_MENU, self.parent.OnClose, m_exit)
+
+    def OnPopup(self, event):
+        self.PopupMenu(self.menu)
+
+    def OnLeftDClick(self, evt):
+        if self.parent.IsShown():
+            self.parent.Hide()
+        else:
+            self.parent.Show()
+
+    def OnLaunch(self, evt):
+        self.parent.launch(self.config["usernames"][3000 - evt.GetId()])
 
 
 class MainFrame(wx.Frame):
@@ -233,6 +269,8 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.statusbar = self.CreateStatusBar()
 
+        self.icon = Icon(self)
+
     def __init__(self, parent):
         self.config = load_config()
         self.master_password = None
@@ -251,6 +289,14 @@ class MainFrame(wx.Frame):
 
         self.__init_gui(parent)
 
+    def launch(self, username):
+        password = self.config["passwords"].get(username)
+        if username and password:
+            from mock import Mock
+            #token = do_login(username, password)
+            token = "TOKEN"
+            launch(token, Mock(dry=True, singularity=False))
+
     def OnClose(self, evt):
         self.Close()
 
@@ -263,6 +309,7 @@ class MainFrame(wx.Frame):
             self.config["passwords"] = {}
 
         save_config(self.config)
+        self.icon.Destroy()
         self.Destroy()
 
     def OnToggleRememberPasswords(self, evt):
