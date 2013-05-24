@@ -81,10 +81,3 @@ def launch(launch_token, args):
 
     # go!
     return subprocess.Popen(" ".join(cmd), shell=True)
-
-
-if __name__ == "__main__":
-    encrypted = encrypt("Hello!", "password")
-    print "Encrypted: %r" % encrypted
-    decrypted = decrypt(encrypted, "password")
-    print "Decrypted: %r" % decrypted

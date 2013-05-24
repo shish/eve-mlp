@@ -56,6 +56,7 @@ TODO
   - click icon -> get list of characters -> launch
   - may need to use a more advanced toolkit that Tk
     - wx is generally better at everything, but more pain to set up for the developer
+- unit tests
 
 
 Thanks
