@@ -44,13 +44,17 @@ def encrypt(cleartext, key):
 
 
 def decrypt(data, key):
-    moo = aes.AESModeOfOperation()
+    try:
+        moo = aes.AESModeOfOperation()
 
-    cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
-    mode, orig_len, ciph, iv = json.loads(data)
+        cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
+        mode, orig_len, ciph, iv = json.loads(data)
 
-    cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
-    return cleartext
+        cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
+        return cleartext
+    except Exception:
+        log.error("Error decrypting password: %s", e)
+        return None
 
 
 def launch(launch_token, args):

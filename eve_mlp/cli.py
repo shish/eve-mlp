@@ -90,17 +90,21 @@ def run_mlp(args):
 
     un2pw = {}
     for username in usernames:
+        password = None
+
         if username in config.get("passwords", {}):
             if not master_pass:
                 master_pass = getpass("Enter master password: ")
             password = decrypt(config["passwords"][username], master_pass)
-        else:
+
+        if not password:
             if len(usernames) == 1:
                 password = getpass("Password: ")
             else:
                 password = getpass("%s's Password: " % username)
             if args.save_passwords:
                 config["passwords"][username] = encrypt(password, master_pass)
+
         un2pw[username] = password
 
     if not args.forgetful:
