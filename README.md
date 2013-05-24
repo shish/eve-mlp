@@ -16,7 +16,7 @@ Setup
 ```
 virtualenv venv
 ./venv/bin/pip install -e ./
-sudo ln -s `pwd`/venv/bin/eve-* /usr/local/bin/
+sudo ln -sf `pwd`/venv/bin/eve-* /usr/local/bin/
 ```
 
 Run
