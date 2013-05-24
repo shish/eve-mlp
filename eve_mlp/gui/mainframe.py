@@ -11,6 +11,7 @@ from eve_mlp.login import do_login, LoginFailed
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
+from eve_mlp.gui.common import resource
 
 
 #
@@ -180,8 +181,7 @@ class MainFrame(wx.Frame):
         # info.SetIcon()
         try:
             info.SetLicense(file(resource("LICENSE.txt")).read())
-        except:
+        except Exception as e:
+            log.exception("Error getting license:")
             info.SetLicense("MIT")
         wx.AboutBox(info)
-
-
