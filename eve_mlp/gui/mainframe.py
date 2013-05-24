@@ -7,7 +7,7 @@ import wx.html
 import requests
 
 from eve_mlp.common import *
-from eve_mlp.login import do_login
+from eve_mlp.login import do_login, LoginFailed
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
@@ -130,9 +130,12 @@ class MainFrame(wx.Frame):
                 os.chdir(di)
 
             if os.path.exists(os.path.join("bin", "ExeFile.exe")):
-                token = do_login(username, password)
-                #token = "TOKEN"
-                launch(token, Mock(dry=False, singularity=singularity))
+                try:
+                    token = do_login(username, password)
+                    #token = "TOKEN"
+                    launch(token, Mock(dry=False, singularity=singularity))
+                except LoginFailed as e:
+                    wx.MessageBox(str(e), "Login Failed", wx.OK | wx.ICON_ERROR)
             else:
                 print "Not in the right directory"
 
