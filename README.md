@@ -52,6 +52,10 @@ TODO
 - download & apply patches?
   - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
 - wine flags management / dll overrides / etc (though it actually all works out of the box for me...)
+- systray support
+  - click icon -> get list of characters -> launch
+  - may need to use a more advanced toolkit that Tk
+    - wx is generally better at everything, but more pain to set up for the developer
 
 
 Thanks
