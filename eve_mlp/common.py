@@ -7,7 +7,7 @@ import platform
 import eve_mlp.aes as aes
 
 
-__version__ = "0.0.0"
+__version__ = "0.0.3"
 
 
 config_path = os.path.expanduser("~/.config/eve-mlp.conf")
