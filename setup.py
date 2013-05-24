@@ -37,5 +37,6 @@ setup(name='eve-mlp',
       entry_points="""\
       [console_scripts]
       eve-mlp = eve_mlp.cli:main
+      eve-gmlp = eve_mlp.gui:main
       """,
       )
