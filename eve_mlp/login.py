@@ -17,7 +17,9 @@ class LoginFailed(Exception):
 def do_login(username, password, args):
     log.debug("Using cached SSO login URL")
     #login_action_url = get_login_action_url(LAUNCHER_INFO)
-    login_action_url = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
+    login_action_url = "https://login.eveonline.com/Account/LogOn?" + \
+        "ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26" + \
+        "redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
 
     access_token = submit_login(login_action_url, username, password)
     launch_token = get_launch_token(access_token)
@@ -76,4 +78,3 @@ def get_launch_token(access_token):
     if not matches:
         raise LoginFailed("No launch token?")
     return matches.group(1)
-

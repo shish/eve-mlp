@@ -14,6 +14,7 @@ def set_icon(root, basename):
     if os.name == "nt":
         root.wm_iconbitmap(default=resource("%s.ico" % basename))
 
+
 def win_center(root):
     root.update()
     w = root.winfo_reqwidth()
@@ -23,6 +24,7 @@ def win_center(root):
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
     root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
 
 def resource(path):
     ideas = [
@@ -38,13 +40,6 @@ def resource(path):
             return p
     return None
 
-#
-# main screen:
-#    User  Pass          
-#    Abc   ***   [Launch]
-#    Def   ***   [Launch]
-#    [    Launch All    ]
-#
 
 class Unlock(Toplevel):
     def __create_widgets(self):
@@ -79,6 +74,14 @@ class Unlock(Toplevel):
         self.callback = callback
         self.__create_widgets()
 
+
+#
+# main screen:
+#    User  Pass
+#    Abc   ***   [Launch]
+#    Def   ***   [Launch]
+#    [    Launch All    ]
+#
 
 class _App(object):
     def __menu(self, master):
@@ -158,7 +161,6 @@ class _App(object):
 
         self.menu = self.__menu(master)
 
-
         #self.controls = self.__control_box(master)
         #self.menu = self.__menu(master)
         if have_ttk:
@@ -185,7 +187,6 @@ class _App(object):
                 #self.master.overrideredirect(False)
                 return True
             unlocker = Unlock(self.master, unlock)
-
 
     def save_settings_and_quit(self, *args):
         print "Saving settings and quitting"

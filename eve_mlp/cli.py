@@ -17,14 +17,30 @@ class UserError(Exception):
 
 def parse_args(args, config):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--eve-dir", help="Point to the location of the eve install folder (Remembered across runs)", default=config.get("eve-dir"), metavar="DIR")
-    parser.add_argument("--singularity-dir", help="Point to the location of the singularity install folder (Remembered across runs)", default=config.get("singularity-dir"), metavar="DIR")
-    parser.add_argument("--username", help="Username to log in with (Can be used multiple times, remembered across runs)", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME")
-    parser.add_argument("--singularity", help="Launch singularity instead of tranquility", default=False, action="store_true")
-    parser.add_argument("--save-passwords", help="Save passwords for all alts (encrypted with one master password)", default=False, action="store_true")
-    parser.add_argument("-d", "--dry", help="Dry-run (for MLP developers)", default=False, action="store_true")
-    parser.add_argument("-v", "--verbose", help="Be more verbose (use more -v's for more verbosity)", action="count", default=0)
-    parser.add_argument("-f", "--forgetful", help="Don't remember settings", default=False, action="store_true")
+    parser.add_argument(
+        "--eve-dir", default=config.get("eve-dir"), metavar="DIR",
+        help="Point to the location of the eve install folder (Remembered across runs)")
+    parser.add_argument(
+        "--singularity-dir", default=config.get("singularity-dir"), metavar="DIR",
+        help="Point to the location of the singularity install folder (Remembered across runs)")
+    parser.add_argument(
+        "--username", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME",
+        help="Username to log in with (Can be used multiple times, remembered across runs)")
+    parser.add_argument(
+        "--singularity", default=False, action="store_true",
+        help="Launch singularity instead of tranquility")
+    parser.add_argument(
+        "--save-passwords", default=False, action="store_true",
+        help="Save passwords for all alts (encrypted with one master password)")
+    parser.add_argument(
+        "-d", "--dry", default=False, action="store_true",
+        help="Dry-run (for MLP developers)")
+    parser.add_argument(
+        "-v", "--verbose", action="count", default=0,
+        help="Be more verbose (use more -v's for more verbosity)")
+    parser.add_argument(
+        "-f", "--forgetful", default=False, action="store_true",
+        help="Don't remember settings")
     args = parser.parse_args(args)
 
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)19.19s %(levelname)4.4s %(message)s")
