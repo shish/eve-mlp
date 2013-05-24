@@ -190,6 +190,7 @@ class Icon(wx.TaskBarIcon):
         self.Bind(wx.EVT_MENU, self.parent.OnClose, m_exit)
 
     def OnPopup(self, event):
+        self.CreateMenu()  # refresh with latest usernames
         self.PopupMenu(self.menu)
 
     def OnLeftDClick(self, evt):
@@ -290,7 +291,14 @@ class MainFrame(wx.Frame):
         self.__init_gui(parent)
 
     def launch(self, username):
-        password = self.config["passwords"].get(username)
+        if username in self.config["passwords"]:
+            password = self.config["passwords"][username]
+        else:
+            ped = wx.PasswordEntryDialog(self, "Enter %s's Password" % username)
+            ped.ShowModal()
+            password = ped.GetValue()
+            ped.Destroy()
+
         if username and password:
             from mock import Mock
             #token = do_login(username, password)
