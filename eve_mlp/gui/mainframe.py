@@ -88,7 +88,10 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.statusbar = self.CreateStatusBar()
 
-        self.icon = TrayIcon(self)
+        try:
+            self.icon = TrayIcon(self)
+        except:
+            self.icon = None
 
     def __init__(self, parent):
         self.config = load_config()
@@ -137,6 +140,8 @@ class MainFrame(wx.Frame):
                 except LoginFailed as e:
                     wx.MessageBox(str(e), "Login Failed", wx.OK | wx.ICON_ERROR)
             else:
+                wx.MessageBox("Can't find bin/ExeFile.exe.\nTry 'Options' -> 'Locate Eve Install'?", "Launch Failed", wx.OK | wx.ICON_ERROR)
+
                 print "Not in the right directory"
 
     def OnClose(self, evt):
@@ -151,7 +156,8 @@ class MainFrame(wx.Frame):
             self.config["passwords"] = {}
 
         save_config(self.config)
-        self.icon.Destroy()
+        if self.icon:
+            self.icon.Destroy()
         self.Destroy()
 
     def OnToggleRememberPasswords(self, evt):
