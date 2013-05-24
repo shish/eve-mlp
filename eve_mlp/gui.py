@@ -163,13 +163,15 @@ class _App(object):
 
         #self.controls = self.__control_box(master)
         #self.menu = self.__menu(master)
+        self.launch_all = Button(master, text="Launch All")
+        self.status = Label(master, text="")
         if have_ttk:
             self.grip = Sizegrip(master)
-        self.status = Label(master, text="This is some placeholder text\nra ra ra mooo")
 
         master.grid_columnconfigure(0, weight=1)
         master.grid_rowconfigure(1, weight=1)
 #        self.controls.grid(column=0, row=0, sticky=(W, E), columnspan=2)
+        self.launch_all.grid(column=0, row=3, sticky=(W, E))
         self.status.grid(column=0, row=4, sticky=(W, E))
         if have_ttk:
             self.grip.grid(column=1, row=4, sticky=(S, E))
