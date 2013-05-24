@@ -1,29 +1,14 @@
-import os
 import sys
 import logging
-from Tkinter import *
-from eve_mlp.common import load_config, save_config, launch, __version__
 
-have_ttk = False
+import wx
+import wx.grid
+from wx.lib.mixins.inspection import InspectableApp
+
+from eve_mlp.common import *
 
 
 log = logging.getLogger(__name__)
-
-
-def set_icon(root, basename):
-    if os.name == "nt":
-        root.wm_iconbitmap(default=resource("%s.ico" % basename))
-
-
-def win_center(root):
-    root.update()
-    w = root.winfo_reqwidth()
-    h = root.winfo_reqheight()
-    ws = root.winfo_screenwidth()
-    hs = root.winfo_screenheight()
-    x = (ws / 2) - (w / 2)
-    y = (hs / 2) - (h / 2)
-    root.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
 
 def resource(path):
@@ -41,171 +26,261 @@ def resource(path):
     return None
 
 
-class Unlock(Toplevel):
-    def __create_widgets(self):
-        self.password = StringVar()
+class CharTable(wx.grid.PyGridTableBase):
+    def __init__(self, grid, config):
+        wx.grid.PyGridTableBase.__init__(self)
+        self.grid = grid
+        self.config = config
 
-        def unlock(*args):
-            if self.callback(self.password.get()):
-                self.destroy()
+    def GetNumberCols(self):
+        return 2
+
+    def GetNumberRows(self):
+        return len(self.config["usernames"]) + 1
+
+    def GetColLabelValue(self, col):
+        return ["Username", "Password", "Action"][col]
+
+    def GetRowLabelValue(self, row):
+        return row
+
+    def GetValue(self, row, col):
+        if row == len(self.config["usernames"]):
+            return ""
+
+        if col == 0:
+            return self.config["usernames"][row]
+        if col == 1:
+            username = self.config["usernames"][row]
+            if username in self.config["passwords"]:
+                return "*" * 8
             else:
-                self.password.set("")
+                return "-" * 8
 
-        label = Label(self, text="Enter Master Password")
-        label.pack(side="top", fill=BOTH)
+        return "x"
 
-        password_box = Entry(self, show="*", textvariable=self.password)
-        password_box.bind('<Key-Return>', unlock)
-        password_box.pack(side="top", fill=BOTH)
-        password_box.focus_set()
+    def SetValue(self, row, col, value):
+        end = len(self.config["usernames"])
 
-        unlock = Button(self, text="Unlock", command=unlock)
-        unlock.pack(side="top", fill=BOTH)
+        # final row
+        if row == end:
+            if value == "":
+                # final row is empty, no change
+                pass
+            else:
+                # final row has had something added to it
+                if col == 0:
+                    self.config["usernames"].append(value)
+                    msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, 1)
+                    self.grid.ProcessTableMessage(msg)
 
-        def die(*args):
-            self.destroy()
-            self.master.destroy()
-        self.protocol("WM_DELETE_WINDOW", die)
+        # username column
+        elif col == 0:
+            if value == "":
+                # a username has been deleted
+                username = self.config["usernames"][row]
+                del self.config["usernames"][row]
+                if username in self.config["passwords"]:
+                    del self.config["passwords"][username]
+                msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, row, 1)
+                self.grid.ProcessTableMessage(msg)
+            else:
+                # a username has been modified
+                self.config["usernames"][row] = value
 
-    def __init__(self, master, callback):
-        Toplevel.__init__(self, master)
-        self.title("Unlock")
-        self.master = master
-        self.callback = callback
-        self.__create_widgets()
+        # password column
+        elif col == 1:
+            username = self.config["usernames"][row]
+            if value == "":
+                # password deleted
+                del self.config["passwords"][username]
+            else:
+                # password set
+                self.config["passwords"][username] = value
 
 
-#
-# main screen:
-#    User  Pass
-#    Abc   ***   [Launch]
-#    Def   ***   [Launch]
-#    [    Launch All    ]
-#
+        msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.grid.ProcessTableMessage(msg)
 
-class _App(object):
-    def __menu(self, master):
-        menubar = Menu(master)
+        self.grid.ForceRefresh()
 
-        def server_menu():
-            servermenu = Menu(menubar, tearoff=0)
-            servermenu.add_radiobutton(label="Tranquility (Main)", variable=self.server, value="tranquility")
-            servermenu.add_radiobutton(label="Singularity (Beta)", variable=self.server, value="singularity")
-            return servermenu
-        menubar.add_cascade(label="Server", menu=server_menu())
 
-        def options_menu():
-            optionsmenu = Menu(menubar, tearoff=0)
-            optionsmenu.add_checkbutton(label="Remember Passwords", variable=self.remember_passwords)
-            optionsmenu.add_command(label="Locate Eve Install", command=None)
-            optionsmenu.add_command(label="Locate Singularity Install", command=None)
-            return optionsmenu
-        menubar.add_cascade(label="Options", menu=options_menu())
+class LauncherPanel(wx.Panel):
+    def __init__(self, parent, config):
+        wx.Panel.__init__(self, parent)
+        self.config = config
 
-        def tools_menu():
-            toolsmenu = Menu(menubar, tearoff=0)
-            toolsmenu.add_command(label="Launch Patcher", command=None)
-            return toolsmenu
-        # menubar.add_cascade(label="Tools", menu=tools_menu())
+        box = wx.StaticBoxSizer(wx.StaticBox(self, label="Character List"), wx.VERTICAL)
 
-        def help_menu():
-            def show_about():
-                t = Toplevel(master)
-                t.title("About")
-                t.transient(master)
-                t.resizable(False, False)
-                #Label(t, image=self.img_logo).grid(column=0, row=0, sticky=(E, W))
-                Label(t, text="Mobile Launch Platform %s" % __version__, anchor=CENTER).grid(column=0, row=1, sticky=(E, W))
-                Label(t, text="(c) 2013 Shish", anchor=CENTER).grid(column=0, row=2, sticky=(E, W))
-                Button(t, text="Close", command=t.destroy).grid(column=0, row=3, sticky=(E,))
-                win_center(t)
+        char_list = wx.grid.Grid(parent, -1)
+        self.char_table = CharTable(char_list, parent.config)
+        char_list.SetTable(self.char_table)
+        char_list.SetColLabelValue(0, "Name")
+        char_list.SetColLabelValue(1, "Password")
+        char_list.SetColLabelValue(2, "Action")
+        launch_all = wx.Button(self, -1, "Launch All")
 
-            def show_license():
-                t = Toplevel(master)
-                t.title("EVE-MLP Licenses")
-                t.transient(master)
-                scroll = Scrollbar(t, orient=VERTICAL)
-                tx = Text(
-                    t,
-                    wrap=WORD,
-                    yscrollcommand=scroll.set,
-                )
-                scroll['command'] = tx.yview
-                scroll.pack(side=RIGHT, fill=Y, expand=1)
-                tx.pack(fill=BOTH, expand=1)
-                tx.insert("0.0", file(resource("LICENSE.txt")).read().replace("\r", ""))
-                tx.configure(state="disabled")
-                tx.focus_set()
-                win_center(t)
+        box.Add(char_list, 1)
+        box.Add(launch_all, 0)
 
-            helpmenu = Menu(menubar, tearoff=0)
-            helpmenu.add_command(label="About", command=show_about)
-            helpmenu.add_command(label="License", command=show_license)
-            return helpmenu
-        menubar.add_cascade(label="Help", menu=help_menu())
+        self.Bind(wx.EVT_BUTTON, self.OnLaunchAll, launch_all)
 
-        master.config(menu=menubar)
+        self.SetSizer(box)
+        self.Layout()
 
-    def __init__(self, master):
-        self.remember_passwords = BooleanVar(master, False)
-        self.server = StringVar(master, "tranquility")
+    def OnLaunchAll(self, evt):
+        for username, password in self.config["passwords"].items():
+            if username and password:
+                from mock import Mock
+                #token = do_login(username, password)
+                token = "TOKEN"
+                launch(token, Mock(dry=True, singularity=False))
 
-        self.master = master
-        self.master_pass = None
+
+class NewsPanel(wx.Panel):
+    def __init__(self, parent, config):
+        wx.Panel.__init__(self, parent)
+        self.config = config
+
+        box = wx.StaticBoxSizer(wx.StaticBox(self, label="News"), wx.VERTICAL)
+
+        # box.Add()
+
+        self.SetSizer(box)
+        self.Layout()
+
+
+class MainFrame(wx.Frame):
+    def __menu(self):
+        menu_bar = wx.MenuBar()
+
+        menu = wx.Menu()
+        m_exit = menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
+        self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
+        menu_bar.Append(menu, "&File")
+
+        menu = wx.Menu()
+        m_tranq = menu.Append(2010, "Tranquility (Main)", "", kind=wx.ITEM_RADIO)
+        m_singu = menu.Append(2011, "Singularity (Beta)", "", kind=wx.ITEM_RADIO)
+        def setServer(s):
+            log.info("Setting server to: %s", s)
+            self.server = s
+        self.Bind(wx.EVT_MENU, lambda e: setServer("tranquility"), m_tranq)
+        self.Bind(wx.EVT_MENU, lambda e: setServer("singularity"), m_singu)
+        menu_bar.Append(menu, "&Server")
+
+        menu = wx.Menu()
+        m_rempasswd = menu.Append(2020, "Remember Passwords", "", kind=wx.ITEM_CHECK)
+        m_loc_tranq = menu.Append(2021, "Locate Eve Install", "")
+        m_loc_singu = menu.Append(2022, "Locate Singularity Install", "")
+        if self.remember_passwords:
+            menu.Check(2020, True)
+        def setDir(name):
+            dd = wx.DirDialog(self, "Pick a game folder", self.config.get(name+"-dir", ""))
+            if dd.ShowModal() == wx.ID_OK:
+                log.info("Setting %s dir to %s", name, dd.GetPath())
+                self.config[name+"-dir"] = dd.GetPath()
+            dd.Destroy()
+        self.Bind(wx.EVT_MENU, lambda e: setDir("eve"), m_loc_tranq)
+        self.Bind(wx.EVT_MENU, lambda e: setDir("singularity"), m_loc_singu)
+        self.Bind(wx.EVT_MENU, self.OnToggleRememberPasswords, m_rempasswd)
+        menu_bar.Append(menu, "&Options")
+
+        menu = wx.Menu()
+        m_exit = menu.Append(wx.ID_EXIT, "Launch Patcher", "")
+        m_exit = menu.Append(wx.ID_EXIT, "Launch Repair", "")
+        #self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
+        #menu_bar.Append(menu, "&Tools")
+
+        menu = wx.Menu()
+        m_about = menu.Append(wx.ID_ABOUT, "&About", "Information about this program")
+        self.Bind(wx.EVT_MENU, self.OnAbout, m_about)
+        menu_bar.Append(menu, "&Help")
+
+        return menu_bar
+
+    def __init_gui(self, parent):
+        wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform", size=(640, 480))
+        self.Bind(wx.EVT_CLOSE, self.OnWinClose)
+
+        self.SetMenuBar(self.__menu())
+
+        self.launcher = LauncherPanel(self, self.config)
+        self.news = NewsPanel(self, self.config)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.launcher,        0, wx.ALL|wx.EXPAND, 0)
+        box.Add(self.news,            1, wx.ALL|wx.EXPAND, 0)
+
+        self.SetAutoLayout(True)
+        self.SetSizer(box)
+        self.Layout()
+        self.statusbar = self.CreateStatusBar()
+
+    def __init__(self, parent):
         self.config = load_config()
+        self.master_password = None
+        self.server = "tranquility"
 
         if self.config["passwords"]:
-            self.remember_passwords.set(True)
+            self.remember_passwords = True
+            ped = wx.PasswordEntryDialog(parent, "Enter Master Password")
+            ped.ShowModal()
+            self.master_pass = ped.GetValue()
+            ped.Destroy()
+            for key in self.config["passwords"]:
+                self.config["passwords"][key] = decrypt(self.config["passwords"][key], self.master_pass)
+        else:
+            self.remember_passwords = False
 
-        master.protocol("WM_DELETE_WINDOW", self.save_settings_and_quit)
+        self.__init_gui(parent)
 
-        self.menu = self.__menu(master)
+    def OnClose(self, evt):
+        self.Close()
 
-        #self.controls = self.__control_box(master)
-        #self.menu = self.__menu(master)
-        self.launch_all = Button(master, text="Launch All")
-        self.status = Label(master, text="")
-        if have_ttk:
-            self.grip = Sizegrip(master)
+    def OnWinClose(self, evt):
+        log.info("Saving config and exiting")
+        if self.remember_passwords:
+            for key in self.config["passwords"]:
+                self.config["passwords"][key] = encrypt(self.config["passwords"][key], self.master_pass)
+        else:
+            self.config["passwords"] = {}
 
-        master.grid_columnconfigure(0, weight=1)
-        master.grid_rowconfigure(1, weight=1)
-#        self.controls.grid(column=0, row=0, sticky=(W, E), columnspan=2)
-        self.launch_all.grid(column=0, row=3, sticky=(W, E))
-        self.status.grid(column=0, row=4, sticky=(W, E))
-        if have_ttk:
-            self.grip.grid(column=1, row=4, sticky=(S, E))
-
-        self.master.update()
-
-        if self.config["passwords"]:
-            self.master.withdraw()
-            #self.master.overrideredirect(True)
-
-            def unlock(password):
-                self.master_pass = password
-                #self.master.update()
-                self.master.deiconify()
-                #self.master.overrideredirect(False)
-                return True
-            unlocker = Unlock(self.master, unlock)
-
-    def save_settings_and_quit(self, *args):
-        print "Saving settings and quitting"
         save_config(self.config)
-        self.master.destroy()
-        self.master.quit()
+        self.Destroy()
 
-    def set_status(self, text):
-        if text:
-            print(text)
-        self.status.config(text=text)
-        self.master.update()
+    def OnToggleRememberPasswords(self, evt):
+        self.remember_passwords = evt.GetEventObject().IsChecked(2020)
+
+    def OnAbout(self, evt):
+        import eve_mlp.common as common
+        info = wx.AboutDialogInfo()
+        info.SetName("Mobile Launch Platform")
+        info.SetDescription("A cross-platform EVE Online launcher")
+        info.SetVersion(common.__version__)
+        info.SetCopyright("(c) Shish 2013 ('Shish Tukay' in game)")
+        info.SetWebSite("https://github.com/shish/eve-mlp")
+        info.AddDeveloper("Shish <webmaster@shishnet.org>")
+        # info.SetIcon()
+        try:
+            info.SetLicense(file(resource("LICENSE.txt")).read())
+        except:
+            info.SetLicense("MIT")
+        wx.AboutBox(info)
 
 
 def main(args=sys.argv):
-    root = Tk()
-    #set_icon(root, "images/tools-icon")
-    root.title("EVE-MLP")
-    _App(root)
-    root.mainloop()
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)19.19s %(levelname)4.4s %(message)s")
+    module_log = logging.getLogger("eve_mlp")
+    module_log.setLevel(logging.DEBUG)
+
+    app = InspectableApp(False)
+    frame = MainFrame(None)
+    frame.Show(True)
+    #import wx.lib.inspection
+    #wx.lib.inspection.InspectionTool().Show()
+    app.MainLoop()
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

@@ -55,7 +55,7 @@ def decrypt(data, key):
 
         cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
         return cleartext
-    except Exception:
+    except Exception as e:
         log.error("Error decrypting password: %s", e)
         return None
 
