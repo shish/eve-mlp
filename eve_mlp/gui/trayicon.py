@@ -36,4 +36,4 @@ class TrayIcon(wx.TaskBarIcon):
             self.parent.Show()
 
     def OnLaunch(self, evt):
-        self.parent.launch(self.config["usernames"][3000 - evt.GetId()])
+        self.parent.launch(self.config["usernames"][evt.GetId() - 3000])
