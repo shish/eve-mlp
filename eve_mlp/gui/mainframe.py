@@ -139,7 +139,7 @@ class MainFrame(wx.Frame):
                     #token = "TOKEN"
                     launch(token, Mock(dry=False, singularity=singularity))
                 except LoginFailed as e:
-                    wx.MessageBox(str(e), "Login Failed", wx.OK | wx.ICON_ERROR)
+                    wx.MessageBox(str(e), "%s: Login Failed" % username, wx.OK | wx.ICON_ERROR)
             else:
                 wx.MessageBox("Can't find bin/ExeFile.exe.\nTry 'Options' -> 'Locate Eve Install'?", "Launch Failed", wx.OK | wx.ICON_ERROR)
 
