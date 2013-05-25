@@ -43,10 +43,11 @@ class MainFrame(wx.Frame):
 
         menu = wx.Menu()
         m_rempasswd = menu.Append(2020, "Remember Passwords", "", kind=wx.ITEM_CHECK)
+        self.m_rempasswd = m_rempasswd  # event handler needs this object, not just ID?
         m_loc_tranq = menu.Append(2021, "Locate Eve Install", "")
         m_loc_singu = menu.Append(2022, "Locate Singularity Install", "")
         if self.remember_passwords:
-            menu.Check(2020, True)
+            m_rempasswd.Check(True)
         def setDir(name):
             dd = wx.DirDialog(self, "Pick a game folder", self.config.get(name+"-dir", ""))
             if dd.ShowModal() == wx.ID_OK:
@@ -162,7 +163,7 @@ class MainFrame(wx.Frame):
         self.Destroy()
 
     def OnToggleRememberPasswords(self, evt):
-        self.remember_passwords = evt.GetEventObject().IsChecked(2020)
+        self.remember_passwords = self.m_rempasswd.IsChecked()
         if not self.master_pass:
             ped = wx.PasswordEntryDialog(self, "Set Master Password")
             ped.ShowModal()
