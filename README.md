@@ -3,6 +3,7 @@ Mobile Launch Platform
 
 A portable (cross-platform) EVE Online launcher
 
+Screenshots & binary downloads: http://code.shishnet.org/eve-mlp/
 
 Features
 --------
@@ -26,36 +27,25 @@ $ sudo pip install -e ./
 Run
 ---
 ```
+Run the gui:
+    eve-gmlp
+    
 Command line with a specific eve install:
-	eve-mlp --eve-dir /home/bob/Games/EVE
+    eve-mlp --eve-dir /home/bob/Games/EVE
 
 Launch multiple alts at once:
-	eve-mlp --username Bob --username Fred --username Jim --username Dave
-
-Launch the last-used eve install with the last-used usernames:
-    eve-mlp
+    eve-mlp --username Bob --username Fred --username Jim --username Dave
 
 Store the passwords for known usernames, but don't actually launch eve:
     eve-mlp --save-passwords --dry
 
 Launch all of your alts in one go, only needing to enter one master password:
     eve-mlp
-
-Run the gui:
-	eve-gmlp
 ```
 
 Shameless Plug
 --------------
 Send ISK to Shish Tukay if you want to encourage more work on this :)
-
-
-TODO
-----
-- download & apply patches?
-  - at least detect the currently installed and currently live versions, launch the official patcher if there's a patch to have
-- wine flags management / dll overrides / etc (though it actually all works out of the box for me...)
-- unit tests
 
 
 Thanks
