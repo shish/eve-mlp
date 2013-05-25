@@ -7,7 +7,7 @@ import platform
 import eve_mlp.aes as aes
 
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 config_path = os.path.expanduser("~/.config/eve-mlp.conf")
@@ -144,7 +144,10 @@ class Config(object):
         if self.settings["remember-passwords"]:
             for acct in self.accounts:
                 if acct.password:
-                    acct.password = encrypt(acct.password, self.master_password)
+                    try:
+                        acct.password = encrypt(acct.password, self.master_password)
+                    except Exception:
+                        acct.password = None
         else:
             for acct in self.accounts:
                 if acct.password:

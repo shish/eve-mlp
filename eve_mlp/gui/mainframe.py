@@ -84,6 +84,8 @@ class MainFrame(wx.Frame):
         self.launcher = LauncherPanel(self, self.config)
         self.news = NewsPanel(self, self.config)
         self.acctedit = AccountPanel(self, False)
+        if not self.config.accounts:
+            self.config.accounts.append(Account(self.config.defaults, {"confname": "Main Setup"}))
         self.acctedit.set_account(self.config.accounts[0])
         self.defaults = AccountPanel(self, True)
         self.defaults.set_account(self.config.defaults)
