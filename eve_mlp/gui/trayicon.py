@@ -1,6 +1,6 @@
 import wx
 
-from eve_mlp.gui.common import resource
+from eve_mlp.gui.common import resource, icon_bundle
 
 
 class TrayIcon(wx.TaskBarIcon):
@@ -8,7 +8,8 @@ class TrayIcon(wx.TaskBarIcon):
         wx.TaskBarIcon.__init__(self)
         self.parent = parent
         self.config = parent.config
-        self.SetIcon(wx.Icon(resource("icon.ico"), wx.BITMAP_TYPE_ICO), "Mobile Launcher Platform")
+        self.SetIcon(wx.Icon(resource("icon.ico"), wx.BITMAP_TYPE_ICO, desiredWidth=16, desiredHeight=16), "Mobile Launcher Platform")
+        #self.SetIcons(icon_bundle(resource("icon.ico")), "Mobile Launcher Platform")
         self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
         self.CreateMenu()
 
