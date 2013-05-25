@@ -17,11 +17,6 @@ from eve_mlp.gui.news import NewsPanel
 from eve_mlp.gui.account import AccountPanel
 
 
-#
-#  20XX - menu IDs
-#  30XX - launch account #XX
-#
-
 log = logging.getLogger(__name__)
 
 
@@ -37,19 +32,19 @@ class MainFrame(wx.Frame):
 
         ################################################################
         menu = wx.Menu()
-        
+
         m_rempasswd = menu.Append(2020, "Remember Passwords", "", kind=wx.ITEM_CHECK)
         self.m_rempasswd = m_rempasswd  # event handler needs this object, not just ID?
         if self.config.settings["remember-passwords"]:
             m_rempasswd.Check(True)
         self.Bind(wx.EVT_MENU, self.OnToggleRememberPasswords, m_rempasswd)
-        
+
         m_start_tray = menu.Append(2021, "Start in Systray", "", kind=wx.ITEM_CHECK)
         self.m_start_tray = m_start_tray  # event handler needs this object, not just ID?
         if self.config.settings["start-tray"]:
             m_start_tray.Check(True)
         self.Bind(wx.EVT_MENU, self.OnToggleStartTray, m_start_tray)
-        
+
         menu_bar.Append(menu, "&Options")
 
         ################################################################
@@ -77,7 +72,7 @@ class MainFrame(wx.Frame):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception as e:
             pass
-        
+
         wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform [%s]" % __version__, size=(800, 600))
         self.Bind(wx.EVT_CLOSE, self.OnWinClose)
         try:
@@ -100,7 +95,7 @@ class MainFrame(wx.Frame):
         left_box.Add(self.launcher, 1, wx.ALL|wx.EXPAND, 0)
         left_box.Add(self.acctedit, 0, wx.ALL|wx.EXPAND, 0)
         left_box.Add(self.defaults, 0, wx.ALL|wx.EXPAND, 0)
-        
+
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(left_box,             0, wx.ALL|wx.EXPAND, 0)
         box.Add(self.news,            1, wx.ALL|wx.EXPAND, 0)
@@ -147,10 +142,10 @@ class MainFrame(wx.Frame):
 
     def OnWinClose(self, evt):
         log.info("Saving config and exiting")
-        
+
         self.config.encrypt_passwords()
         self.config.save()
-        
+
         if self.icon:
             self.icon.Destroy()
         self.Destroy()
@@ -175,16 +170,19 @@ class MainFrame(wx.Frame):
         info.SetCopyright("(c) Shish 2013 ('Shish Tukay' in game)")
         info.SetWebSite("https://github.com/shish/eve-mlp")
         info.AddDeveloper("Shish <webmaster@shishnet.org>")
-        
+
+        # Had some trouble with pyinstaller not putting these resources
+        # in the places they should be, so make sure we can live without
+        # them until the pyinstaller config gets fixed
         try:
             info.SetIcon(wx.Icon(resource("icon.ico"), wx.BITMAP_TYPE_ICO))
         except Exception as e:
             log.exception("Error getting icon:")
-            
+
         try:
             info.SetLicense(file(resource("LICENSE.txt")).read())
         except Exception as e:
             log.exception("Error getting license:")
             info.SetLicense("MIT")
-            
+
         wx.AboutBox(info)

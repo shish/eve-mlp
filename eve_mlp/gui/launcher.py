@@ -74,6 +74,13 @@ class CharTable(wx.grid.PyGridTableBase):
 
 
 class LauncherPanel(wx.Panel):
+    """
+    List all the known Account objects, so the player can pick and interact with them
+
+    Now that settings are a separate panel, it might make sense to move away from
+    a spreadsheet view?
+    """
+
     def __init__(self, parent, config):
         wx.Panel.__init__(self, parent)
         self.parent = parent

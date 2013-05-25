@@ -10,6 +10,7 @@ Features
 - Remember usernames
 - Remember passwords (one master password for several alts)
 - Launch multiple alts at once
+  - Different Eve folders for each of them, if you want to keep settings and cache separate
 - Systray icon
   - Double click to hide main window
   - Right click -> launch character

@@ -5,6 +5,7 @@ from wx.lib.mixins.inspection import InspectableApp
 
 from eve_mlp.gui.mainframe import MainFrame
 
+
 def main(args=sys.argv):
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)19.19s %(levelname)4.4s %(message)s")
     module_log = logging.getLogger("eve_mlp")

@@ -6,6 +6,17 @@ log = logging.getLogger(__name__)
 
 
 def ltrim(x):
+    """
+    Trim a folder name so that it fits on a button, eg:
+
+      /home/media/Games/CCP/Eve -> ...ames/CCP/Eve
+
+    This could probably be done better:
+      - split at folder boundaries if possible
+      - show some from the start and some from the end
+
+      /home/.../CCP/Eve
+    """
     if not x:
         return "(Default)"
     elif len(x) > 20:
@@ -15,6 +26,14 @@ def ltrim(x):
 
 
 class AccountPanel(wx.Panel):
+    """
+    A GUI for editing an individual Account object.
+
+    If default=True, it will only show the fields that make sense
+    when default'ed (eg game install folder is often shared between
+    accounts, but account names are largely unique)
+    """
+
     def __init__(self, parent, default=False):
         wx.Panel.__init__(self, parent)
         self.parent = parent
@@ -72,7 +91,7 @@ class AccountPanel(wx.Panel):
                 self.account.serverid = s.lower()
         self.serverid.Bind(wx.EVT_COMBOBOX, set_serverid, self.serverid)
         grid.Add(self.serverid, 1, wx.EXPAND)
-        
+
         box.Add(grid, 1, wx.EXPAND)
         self.SetSizer(box)
         self.Layout()
@@ -81,7 +100,7 @@ class AccountPanel(wx.Panel):
         self.account = account
 
         log.info("Setting account editor to use %s", account)
-        
+
         self.box_label.SetLabel("%s's settings" % account.confname if account.confname else "Default Settings")
         if not self.default:
             self.confname.SetValue(account.confname or "")

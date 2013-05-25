@@ -15,8 +15,19 @@ log = logging.getLogger(__name__)
 
 
 class Account(object):
+    """
+    Holds the settings for a given launch configuration. Might be worth
+    renaming to LaunchConfig, since there can be multiple configurations
+    for a single Eve account?
+
+    Takes another Account as a base, so that we can have one "default"
+    account which sets the common things like where the game is installed,
+    then seperate sub-accounts inheriting from that which store the
+    usernames & passwords.
+    """
+
     attrs = ["confname", "username", "password", "gamepath", "serverid"]
-        
+
     def __init__(self, base, custom):
         self.base = base
         for attr in self.attrs:
@@ -88,6 +99,12 @@ class Account(object):
 
 
 class Config(object):
+    """
+    The root data structure that holds all the accounts and app settings;
+    most of the parts of the app will have a reference to this structure,
+    and they work together to modify it according to the user's will.
+    """
+
     def __init__(self):
         self.defaults = Account(None, {
             "confname": None,
@@ -106,14 +123,14 @@ class Config(object):
     def load(self):
         try:
             config = json.loads(file(config_path).read())
-            
+
             self.defaults.gamepath = config.get("defaults", {}).get("gamepath")
             self.defaults.serverid = config.get("defaults", {}).get("serverid")
-            
+
             self.accounts = []
             for acct_data in config["accounts"]:
                 self.accounts.append(Account(self.defaults, acct_data))
-                
+
             self.settings.update(config["settings"])
         except:
             log.debug("Couldn't load config file:", exc_info=True)
@@ -146,10 +163,7 @@ class Config(object):
         if self.settings["remember-passwords"]:
             for acct in self.accounts:
                 if acct.password:
-                    try:
-                        acct.password = encrypt(acct.password, self.master_password)
-                    except Exception:
-                        acct.password = None
+                    acct.password = encrypt(acct.password, self.master_password)
         else:
             for acct in self.accounts:
                 if acct.password:
@@ -157,13 +171,17 @@ class Config(object):
 
 
 def encrypt(cleartext, key):
-    moo = aes.AESModeOfOperation()
+    try:
+        moo = aes.AESModeOfOperation()
 
-    cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
-    iv = [ord(x) for x in os.urandom(16)]
+        cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
+        iv = [ord(x) for x in os.urandom(16)]
 
-    mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"], cypherkey, moo.aes.keySize["SIZE_128"], iv)
-    return json.dumps([mode, orig_len, ciph, iv]).replace(" ", "")
+        mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"], cypherkey, moo.aes.keySize["SIZE_128"], iv)
+        return json.dumps([mode, orig_len, ciph, iv]).replace(" ", "")
+    except Exception as e:
+        log.error("Error encrypting data: %s", e)
+        return None
 
 
 def decrypt(data, key):
@@ -176,7 +194,7 @@ def decrypt(data, key):
         cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
         return cleartext
     except Exception as e:
-        log.error("Error decrypting password: %s", e)
+        log.error("Error decrypting data: %s", e)
         return None
 
 
@@ -186,7 +204,7 @@ class LaunchFailed(Exception):
 
 def launch(config, account, launch_token):
     log.info("Launching eve")
-    
+
     if not os.path.exists(os.path.join(account.gamepath, "bin", "ExeFile.exe")):
         raise LaunchFailed("Can't find bin/ExeFile.exe, is the game folder set correctly?")
 
