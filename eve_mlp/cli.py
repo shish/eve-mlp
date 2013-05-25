@@ -20,20 +20,23 @@ def parse_args(args, config):
     This needs a lot of re-doing for the account-based config
     """
     parser = argparse.ArgumentParser()
+
+    # Specific LaunchConfig options
+    parser.add_argument(  # TODO: default: look through config.launches for LaunchConfigs with the 'selected' flag set
+        "--launch", dest="launches", action="append", default=[], metavar="NAME",
+        help="Launch configuration to use (can be repeated)")
+
+    # Base LaunchConfig options
     parser.add_argument(
-        "--eve-dir", default=config.get("eve-dir"), metavar="DIR",
-        help="Point to the location of the eve install folder (Remembered across runs)")
+        "--game-path", default=config.defaults.gamepath, metavar="DIR",
+        help="Point to the location of the Eve install folder")
     parser.add_argument(
-        "--singularity-dir", default=config.get("singularity-dir"), metavar="DIR",
-        help="Point to the location of the singularity install folder (Remembered across runs)")
+        "--server", default="tranquility",
+        help="Which server to connect to (tranquility (default) or singularity)")
+
+    # App options
     parser.add_argument(
-        "--username", dest="usernames", action="append", default=config.get("usernames"), metavar="NAME",
-        help="Username to log in with (Can be used multiple times, remembered across runs)")
-    parser.add_argument(
-        "--singularity", default=False, action="store_true",
-        help="Launch singularity instead of tranquility")
-    parser.add_argument(
-        "--save-passwords", default=False, action="store_true",
+        "--save-passwords", default=config.settings["remember-passwords"], action="store_true",
         help="Save passwords for all alts (encrypted with one master password)")
     parser.add_argument(
         "-d", "--dry", default=False, action="store_true",
@@ -44,6 +47,7 @@ def parse_args(args, config):
     parser.add_argument(
         "-f", "--forgetful", default=False, action="store_true",
         help="Don't remember settings")
+
     args = parser.parse_args(args)
 
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)19.19s %(levelname)4.4s %(message)s")
@@ -51,14 +55,13 @@ def parse_args(args, config):
     module_log.setLevel(logging.WARNING - args.verbose * 10)
 
     # update remembered config
-    if args.eve_dir:
-        config["eve-dir"] = args.eve_dir
+    if args.game_path:
+        config.defaults.gamepath = args.game_path
 
-    if args.singularity_dir:
-        config["singularity-dir"] = args.singularity_dir
+    if args.server:
+        config.defaults.serverid = args.server
 
-    if args.usernames:
-        config["usernames"] = args.usernames
+    config.settings["remember-passwords"] = args.save_passwords
 
     # return
     return args
@@ -126,7 +129,7 @@ def run_mlp(args):
             launch_config = get_launch_config(config, name)
             token = None
             if launch_config.username and launch_config.password:
-                token = do_login(username, password)
+                token = do_login(launch_config.username, launch_config.password)
             launch(config, launch_config, token)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
