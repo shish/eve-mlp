@@ -99,6 +99,7 @@ class Config(object):
         self.accounts = []
         self.settings = {
             "remember-passwords": False,
+            "start-tray": False,
         }
         self.master_password = None
 

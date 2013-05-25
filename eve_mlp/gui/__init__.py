@@ -12,7 +12,6 @@ def main(args=sys.argv):
 
     app = InspectableApp(False)
     frame = MainFrame(None)
-    frame.Show(True)
     #import wx.lib.inspection
     #wx.lib.inspection.InspectionTool().Show()
     app.MainLoop()

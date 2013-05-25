@@ -44,6 +44,12 @@ class MainFrame(wx.Frame):
             m_rempasswd.Check(True)
         self.Bind(wx.EVT_MENU, self.OnToggleRememberPasswords, m_rempasswd)
         
+        m_start_tray = menu.Append(2021, "Start in Systray", "", kind=wx.ITEM_CHECK)
+        self.m_start_tray = m_start_tray  # event handler needs this object, not just ID?
+        if self.config.settings["start-tray"]:
+            m_start_tray.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnToggleStartTray, m_start_tray)
+        
         menu_bar.Append(menu, "&Options")
 
         ################################################################
@@ -104,11 +110,18 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.statusbar = self.CreateStatusBar()
 
+        show = True
         try:
             self.icon = TrayIcon(self)
+            if self.config.settings["start-tray"]:
+                log.info("Start-in-tray enabled, hiding main window")
+                show = False
         except Exception as e:
             log.exception("Failed to create tray icon:")
             self.icon = None
+
+        if show:
+            self.Show(True)
 
     def __init__(self, parent):
         self.config = Config()
@@ -146,6 +159,9 @@ class MainFrame(wx.Frame):
         self.config.settings["remember-passwords"] = self.m_rempasswd.IsChecked()
         if self.config.settings["remember-passwords"]:
             self.config.master_password = get_password(self, "Set Master Password")
+
+    def OnToggleStartTray(self, evt):
+        self.config.settings["start-tray"] = self.m_start_tray.IsChecked()
 
     def OnAccountSelected(self, idx):
         self.acctedit.set_account(self.config.accounts[idx])
