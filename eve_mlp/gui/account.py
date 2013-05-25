@@ -36,7 +36,7 @@ class AccountPanel(wx.Panel):
         grid.Add(wx.StaticText(self, wx.ID_ANY, "Game Path"), 0, wx.EXPAND)
         self.gamepath = wx.Button(self, label="")
         def set_gamepath(evt):
-            dd = wx.DirDialog(self, "Pick a game folder", self.account.gamepath)
+            dd = wx.DirDialog(self, "Pick a game folder", self.account.gamepath or ".")
             if dd.ShowModal() == wx.ID_OK:
                 self.account.gamepath = dd.GetPath()
                 self.gamepath.SetLabel(self.account.gamepath)
