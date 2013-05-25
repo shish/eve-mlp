@@ -14,15 +14,13 @@ config_path = os.path.expanduser("~/.config/eve-mlp.conf")
 log = logging.getLogger(__name__)
 
 
-class Account(object):
+class LaunchConfig(object):
     """
-    Holds the settings for a given launch configuration. Might be worth
-    renaming to LaunchConfig, since there can be multiple configurations
-    for a single Eve account?
+    Holds the settings for a given launch configuration.
 
-    Takes another Account as a base, so that we can have one "default"
+    Takes another LaunchConfig as a base, so that we can have one "default"
     account which sets the common things like where the game is installed,
-    then seperate sub-accounts inheriting from that which store the
+    then seperate sub-launches inheriting from that which store the
     usernames & passwords.
     """
 
@@ -40,7 +38,7 @@ class Account(object):
         return d
 
     def __str__(self):
-        return "Account(%r)" % self._confname
+        return "LaunchConfig(%r)" % self._confname
 
     @property
     def confname(self):
@@ -100,20 +98,20 @@ class Account(object):
 
 class Config(object):
     """
-    The root data structure that holds all the accounts and app settings;
+    The root data structure that holds all the launches and app settings;
     most of the parts of the app will have a reference to this structure,
     and they work together to modify it according to the user's will.
     """
 
     def __init__(self):
-        self.defaults = Account(None, {
+        self.defaults = LaunchConfig(None, {
             "confname": None,
             "username": None,
             "password": None,
             "gamepath": ".",
             "serverid": "tranquility",
         })
-        self.accounts = []
+        self.launches = []
         self.settings = {
             "remember-passwords": False,
             "start-tray": False,
@@ -127,9 +125,9 @@ class Config(object):
             self.defaults.gamepath = config.get("defaults", {}).get("gamepath")
             self.defaults.serverid = config.get("defaults", {}).get("serverid")
 
-            self.accounts = []
-            for acct_data in config["accounts"]:
-                self.accounts.append(Account(self.defaults, acct_data))
+            self.launches = []
+            for launch_config_data in config["accounts"]:
+                self.launches.append(LaunchConfig(self.defaults, launch_config_data))
 
             self.settings.update(config["settings"])
         except:
@@ -138,7 +136,7 @@ class Config(object):
     def save(self):
         config = {
             "defaults": self.defaults.__json__(),
-            "accounts": [a.__json__() for a in self.accounts],
+            "accounts": [a.__json__() for a in self.launches],
             "settings": self.settings
         }
         try:
@@ -151,23 +149,23 @@ class Config(object):
 
     def decrypt_passwords(self):
         if self.settings["remember-passwords"]:
-            for acct in self.accounts:
-                if acct.password:
-                    acct.password = decrypt(acct.password, self.master_password)
+            for launch_config in self.launches:
+                if launch_config.password:
+                    launch_config.password = decrypt(launch_config.password, self.master_password)
         else:
-            for acct in self.accounts:
-                if acct.password:
-                    acct.password = None
+            for launch_config in self.launches:
+                if launch_config.password:
+                    launch_config.password = None
 
     def encrypt_passwords(self):
         if self.settings["remember-passwords"]:
-            for acct in self.accounts:
-                if acct.password:
-                    acct.password = encrypt(acct.password, self.master_password)
+            for launch_config in self.launches:
+                if launch_config.password:
+                    launch_config.password = encrypt(launch_config.password, self.master_password)
         else:
-            for acct in self.accounts:
-                if acct.password:
-                    acct.password = None
+            for launch_config in self.launches:
+                if launch_config.password:
+                    launch_config.password = None
 
 
 def encrypt(cleartext, key):
@@ -202,10 +200,10 @@ class LaunchFailed(Exception):
     pass
 
 
-def launch(config, account, launch_token):
+def launch(config, launch_config, launch_token):
     log.info("Launching eve")
 
-    if not os.path.exists(os.path.join(account.gamepath, "bin", "ExeFile.exe")):
+    if not os.path.exists(os.path.join(launch_config.gamepath, "bin", "ExeFile.exe")):
         raise LaunchFailed("Can't find bin/ExeFile.exe, is the game folder set correctly?")
 
     cmd = []
@@ -217,13 +215,13 @@ def launch(config, account, launch_token):
         cmd.append("wine")
 
     # run the app
-    cmd.append('"' + os.path.join(account.gamepath, "bin", "ExeFile.exe") + '"')
+    cmd.append('"' + os.path.join(launch_config.gamepath, "bin", "ExeFile.exe") + '"')
     if launch_token:
         cmd.append("/ssoToken=" + launch_token)
     cmd.append("/noconsole")
 
     # app flags
-    if account.serverid == "singularity":
+    if launch_config.serverid == "singularity":
         cmd.append("/server:Singularity")
 
     # go!

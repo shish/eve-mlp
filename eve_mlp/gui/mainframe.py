@@ -14,7 +14,7 @@ from eve_mlp.login import do_login, LoginFailed
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
-from eve_mlp.gui.account import AccountPanel
+from eve_mlp.gui.launchconfig import LaunchConfigPanel
 
 
 log = logging.getLogger(__name__)
@@ -84,16 +84,16 @@ class MainFrame(wx.Frame):
 
         self.launcher = LauncherPanel(self, self.config)
         self.news = NewsPanel(self, self.config)
-        self.acctedit = AccountPanel(self, False)
-        if not self.config.accounts:
-            self.config.accounts.append(Account(self.config.defaults, {"confname": "Main Setup"}))
-        self.acctedit.set_account(self.config.accounts[0])
-        self.defaults = AccountPanel(self, True)
-        self.defaults.set_account(self.config.defaults)
+        self.launch_config_edit = LaunchConfigPanel(self, False)
+        if not self.config.launches:
+            self.config.launches.append(LaunchConfig(self.config.defaults, {"confname": "Main Setup"}))
+        self.launch_config_edit.set_launch_config(self.config.launches[0])
+        self.defaults = LaunchConfigPanel(self, True)
+        self.defaults.set_launch_config(self.config.defaults)
 
         left_box = wx.BoxSizer(wx.VERTICAL)
         left_box.Add(self.launcher, 1, wx.ALL|wx.EXPAND, 0)
-        left_box.Add(self.acctedit, 0, wx.ALL|wx.EXPAND, 0)
+        left_box.Add(self.launch_config_edit, 0, wx.ALL|wx.EXPAND, 0)
         left_box.Add(self.defaults, 0, wx.ALL|wx.EXPAND, 0)
 
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -126,16 +126,16 @@ class MainFrame(wx.Frame):
             self.config.decrypt_passwords()
         self.__init_gui(parent)
 
-    def launch(self, account):
+    def launch(self, launch_config):
         try:
             token = None
-            if account.username and account.password:
-                token = do_login(account.username, account.password)
-            launch(self.config, account, token)
+            if launch_config.username and launch_config.password:
+                token = do_login(launch_config.username, launch_config.password)
+            launch(self.config, launch_config, token)
         except LoginFailed as e:
-            wx.MessageBox(str(e), "%s: Login Failed" % account.confname, wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(str(e), "%s: Login Failed" % launch_config.confname, wx.OK | wx.ICON_ERROR)
         except LaunchFailed as e:
-            wx.MessageBox(str(e), "%s: Launch Failed" % account.confname, wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(str(e), "%s: Launch Failed" % launch_config.confname, wx.OK | wx.ICON_ERROR)
 
     def OnClose(self, evt):
         self.Close()
@@ -158,8 +158,8 @@ class MainFrame(wx.Frame):
     def OnToggleStartTray(self, evt):
         self.config.settings["start-tray"] = self.m_start_tray.IsChecked()
 
-    def OnAccountSelected(self, idx):
-        self.acctedit.set_account(self.config.accounts[idx])
+    def OnLaunchConfigSelected(self, idx):
+        self.launch_config_edit.set_launch_config(self.config.launches[idx])
 
     def OnAbout(self, evt):
         import eve_mlp.common as common

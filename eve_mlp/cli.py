@@ -99,14 +99,14 @@ def get_logins(args, config):
     return logins
 
 
-def get_account(config, account_name):
+def get_launch_config(config, name):
     """
     Get a launch config by name
     """
-    for acct in config.accounts:
-        if acct.confname == account_name:
-            return acct
-    raise Exception("No Account named %s" % account_name)
+    for launch_config in config.launches:
+        if launch_config.confname == name:
+            return launch_config
+    raise Exception("No LaunchConfig named %s" % name)
 
 
 def run_mlp(args):
@@ -121,13 +121,13 @@ def run_mlp(args):
 
     logins = get_logins(args, config)
 
-    for account_name in args.accounts:
+    for name in args.launches:
         try:
-            account = get_account(config, account_name)
+            launch_config = get_launch_config(config, name)
             token = None
-            if account.username and account.password:
+            if launch_config.username and launch_config.password:
                 token = do_login(username, password)
-            launch(config, account, token)
+            launch(config, launch_config, token)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1

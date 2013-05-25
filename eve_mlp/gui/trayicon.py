@@ -16,8 +16,8 @@ class TrayIcon(wx.TaskBarIcon):
         self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
         self.menu = wx.Menu()
 
-        for n, account in enumerate(self.config.accounts):
-            m_launch = self.menu.Append(3000 + n, 'Launch '+account.confname)
+        for n, launch_config in enumerate(self.config.launches):
+            m_launch = self.menu.Append(3000 + n, 'Launch ' + launch_config.confname)
             self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch)
 
         self.menu.AppendSeparator()
@@ -41,7 +41,7 @@ class TrayIcon(wx.TaskBarIcon):
     def OnLaunch(self, evt):
         uid = evt.GetId() - 3000
         if uid == 200:
-            for account in self.config.accounts:
-                self.main.launch(account)
+            for launch_config in self.config.launches:
+                self.main.launch(launch_config)
         else:
-            self.main.launch(self.config.accounts[uid])
+            self.main.launch(self.config.launches[uid])

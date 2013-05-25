@@ -1,7 +1,7 @@
 import wx
 import wx.grid
 
-from eve_mlp.common import Account
+from eve_mlp.common import LaunchConfig
 
 
 class CharTable(wx.grid.PyGridTableBase):
@@ -23,7 +23,7 @@ class CharTable(wx.grid.PyGridTableBase):
         return 2
 
     def GetNumberRows(self):
-        return len(self.config.accounts) + 1
+        return len(self.config.launches) + 1
 
     def GetColLabelValue(self, col):
         return ["Setup Name", "Action"][col]
@@ -32,16 +32,16 @@ class CharTable(wx.grid.PyGridTableBase):
         return row
 
     def GetValue(self, row, col):
-        if row == len(self.config.accounts):
+        if row == len(self.config.launches):
             return ""
         if col == 0:
-            return self.config.accounts[row].confname
+            return self.config.launches[row].confname
         if col == 1:
             return "Launch!"
         return "x"
 
     def SetValue(self, row, col, value):
-        end = len(self.config.accounts)
+        end = len(self.config.launches)
 
         # final row
         if row == end:
@@ -51,21 +51,21 @@ class CharTable(wx.grid.PyGridTableBase):
             else:
                 # final row has had something added to it
                 if col == 0:
-                    self.config.accounts.append(Account(self.config.defaults, {"confname": value}))
+                    self.config.launches.append(LaunchConfig(self.config.defaults, {"confname": value}))
                     msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, 1)
                     self.grid.ProcessTableMessage(msg)
-                    self.main.OnAccountSelected(row)
+                    self.main.OnLaunchConfigSelected(row)
 
         # username column
         elif col == 0:
             if value == "":
                 # a username has been deleted
-                del self.config.accounts[row]
+                del self.config.launches[row]
                 msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, row, 1)
                 self.grid.ProcessTableMessage(msg)
             else:
                 # a username has been modified
-                self.config.accounts[row].confname = value
+                self.config.launches[row].confname = value
 
         msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.grid.ProcessTableMessage(msg)
@@ -75,7 +75,7 @@ class CharTable(wx.grid.PyGridTableBase):
 
 class LauncherPanel(wx.Panel):
     """
-    List all the known Account objects, so the player can pick and interact with them
+    List all the known LaunchConfig objects, so the player can pick and interact with them
 
     Now that settings are a separate panel, it might make sense to move away from
     a spreadsheet view?
@@ -106,13 +106,13 @@ class LauncherPanel(wx.Panel):
 
     def OnCellLeftClick(self, evt):
         uid = evt.GetRow()
-        if uid < len(self.config.accounts):
+        if uid < len(self.config.launches):
             if evt.GetCol() == 0:
-                self.parent.OnAccountSelected(uid)
+                self.parent.OnLaunchConfigSelected(uid)
                 # we handled it, but we also want the default action (edit this cell)
                 evt.Skip(True)
             if evt.GetCol() == 1:
-                self.parent.launch(self.config.accounts[uid])
+                self.parent.launch(self.config.launches[uid])
                 # we handled it
                 evt.Skip(False)
         else:
@@ -120,5 +120,5 @@ class LauncherPanel(wx.Panel):
             evt.Skip(True)
 
     def OnLaunchAll(self, evt):
-        for account in self.config.accounts:
-            self.parent.launch(account)
+        for launch_config in self.config.launches:
+            self.parent.launch(launch_config)

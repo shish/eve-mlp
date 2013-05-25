@@ -25,13 +25,13 @@ def ltrim(x):
         return x
 
 
-class AccountPanel(wx.Panel):
+class LaunchConfigPanel(wx.Panel):
     """
-    A GUI for editing an individual Account object.
+    A GUI for editing an individual LaunchConfig object.
 
     If default=True, it will only show the fields that make sense
     when default'ed (eg game install folder is often shared between
-    accounts, but account names are largely unique)
+    launches, but account names are largely unique)
     """
 
     def __init__(self, parent, default=False):
@@ -49,33 +49,33 @@ class AccountPanel(wx.Panel):
             self.confname = wx.TextCtrl(self)
             def set_confname(evt):
                 if self.confname.GetLabel():
-                    self.account.confname = self.confname.GetValue()
+                    self.launch_config.confname = self.confname.GetValue()
             self.Bind(wx.EVT_TEXT, set_confname, self.confname)
             grid.Add(self.confname, 1, wx.EXPAND)
 
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Username"), 0, wx.EXPAND)
             self.username = wx.TextCtrl(self)
             def set_username(evt):
-                self.account.username = self.username.GetValue() or None
+                self.launch_config.username = self.username.GetValue() or None
             self.Bind(wx.EVT_TEXT, set_username, self.username)
             grid.Add(self.username, 1, wx.EXPAND)
 
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Password"), 0, wx.EXPAND)
             self.password = wx.TextCtrl(self, style=wx.TE_PASSWORD)
             def set_password(evt):
-                self.account.password = self.password.GetValue() or None
+                self.launch_config.password = self.password.GetValue() or None
             self.Bind(wx.EVT_TEXT, set_password, self.password)
             grid.Add(self.password, 1, wx.EXPAND)
 
         grid.Add(wx.StaticText(self, wx.ID_ANY, "Game Path"), 0, wx.EXPAND)
         self.gamepath = wx.Button(self, label="")
         def set_gamepath(evt):
-            dd = wx.DirDialog(self, "Pick a game folder", self.account.gamepath or ".")
+            dd = wx.DirDialog(self, "Pick a game folder", self.launch_config.gamepath or ".")
             if dd.ShowModal() == wx.ID_OK:
-                self.account.gamepath = dd.GetPath()
-                self.gamepath.SetLabel(self.account.gamepath[-20:])
+                self.launch_config.gamepath = dd.GetPath()
+                self.gamepath.SetLabel(self.launch_config.gamepath[-20:])
             else:
-                self.account.gamepath = None
+                self.launch_config.gamepath = None
                 self.gamepath.SetLabel("(Default)")
             dd.Destroy()
         self.Bind(wx.EVT_BUTTON, set_gamepath, self.gamepath)
@@ -86,9 +86,9 @@ class AccountPanel(wx.Panel):
         def set_serverid(evt):
             s = self.serverid.GetValue()
             if s == "(Default)":
-                self.account.serverid = None
+                self.launch_config.serverid = None
             else:
-                self.account.serverid = s.lower()
+                self.launch_config.serverid = s.lower()
         self.serverid.Bind(wx.EVT_COMBOBOX, set_serverid, self.serverid)
         grid.Add(self.serverid, 1, wx.EXPAND)
 
@@ -96,21 +96,21 @@ class AccountPanel(wx.Panel):
         self.SetSizer(box)
         self.Layout()
 
-    def set_account(self, account):
-        self.account = account
+    def set_launch_config(self, launch_config):
+        self.launch_config = launch_config
 
-        log.info("Setting account editor to use %s", account)
+        log.info("Setting launch_config editor to use %s", launch_config)
 
-        self.box_label.SetLabel("%s's settings" % account.confname if account.confname else "Default Settings")
+        self.box_label.SetLabel("%s's settings" % launch_config.confname if launch_config.confname else "Default Settings")
         if not self.default:
-            self.confname.SetValue(account.confname or "")
-            self.username.SetValue(account.username or "")
-            self.password.SetValue(account.password or "")
-        self.gamepath.SetLabel(ltrim(account._gamepath))
+            self.confname.SetValue(launch_config.confname or "")
+            self.username.SetValue(launch_config.username or "")
+            self.password.SetValue(launch_config.password or "")
+        self.gamepath.SetLabel(ltrim(launch_config._gamepath))
 
-        if account._serverid == "tranquility":
+        if launch_config._serverid == "tranquility":
             self.serverid.Select(1)
-        elif account._serverid == "singularity":
+        elif launch_config._serverid == "singularity":
             self.serverid.Select(2)
         else:
             self.serverid.Select(0)
