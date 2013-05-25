@@ -1,4 +1,8 @@
 import wx
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 def ltrim(x):
@@ -26,21 +30,21 @@ class AccountPanel(wx.Panel):
             self.confname = wx.TextCtrl(self)
             def set_confname(evt):
                 if self.confname.GetLabel():
-                    self.account.confname = self.confname.GetLabel()
+                    self.account.confname = self.confname.GetValue()
             self.Bind(wx.EVT_TEXT, set_confname, self.confname)
             grid.Add(self.confname, 1, wx.EXPAND)
 
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Username"), 0, wx.EXPAND)
             self.username = wx.TextCtrl(self)
             def set_username(evt):
-                self.account.username = self.username.GetLabel() or None
+                self.account.username = self.username.GetValue() or None
             self.Bind(wx.EVT_TEXT, set_username, self.username)
             grid.Add(self.username, 1, wx.EXPAND)
 
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Password"), 0, wx.EXPAND)
             self.password = wx.TextCtrl(self, style=wx.TE_PASSWORD)
             def set_password(evt):
-                self.account.password = self.password.GetLabel() or None
+                self.account.password = self.password.GetValue() or None
             self.Bind(wx.EVT_TEXT, set_password, self.password)
             grid.Add(self.password, 1, wx.EXPAND)
 
@@ -75,12 +79,14 @@ class AccountPanel(wx.Panel):
 
     def set_account(self, account):
         self.account = account
+
+        log.info("Setting account editor to use %s", account)
         
         self.box_label.SetLabel("%s's settings" % account.confname if account.confname else "Default Settings")
         if not self.default:
-            self.confname.SetLabel(account.confname or "")
-            self.username.SetLabel(account.username or "")
-            self.password.SetLabel(account.password or "")
+            self.confname.SetValue(account.confname or "")
+            self.username.SetValue(account.username or "")
+            self.password.SetValue(account.password or "")
         self.gamepath.SetLabel(ltrim(account._gamepath))
 
         if account._serverid == "tranquility":

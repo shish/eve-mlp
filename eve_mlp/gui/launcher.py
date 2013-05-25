@@ -102,10 +102,12 @@ class LauncherPanel(wx.Panel):
         if uid < len(self.config.accounts):
             if evt.GetCol() == 0:
                 self.parent.OnAccountSelected(uid)
+                # we handled it, but we also want the default action (edit this cell)
+                evt.Skip(True)
             if evt.GetCol() == 1:
                 self.parent.launch(self.config.accounts[uid])
-            # we handled it
-            evt.Skip(False)
+                # we handled it
+                evt.Skip(False)
         else:
             # we can't handle it, skip us
             evt.Skip(True)

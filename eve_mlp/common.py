@@ -28,6 +28,9 @@ class Account(object):
             d[attr] = getattr(self, "_"+attr)
         return d
 
+    def __str__(self):
+        return "Account(%r)" % self._confname
+
     @property
     def confname(self):
         if self._confname:
