@@ -8,18 +8,24 @@ class CharTable(wx.grid.PyGridTableBase):
         wx.grid.PyGridTableBase.__init__(self)
         self.grid = grid
         self.config = config
-        
-        grid.RegisterDataType(wx.grid.GRID_VALUE_STRING, None, None)
-        grid.RegisterDataType("PASSWORD", None, PasswordCellEditor())
-        grid.SetRowLabelSize(40)
 
     def GetTypeName(self, row, col):
         if col == 1:
             return "PASSWORD"
+        #if col == 2: # and row <= len(self.config["usernames"]):
+        #    return "LAUNCHER"
         return wx.grid.PyGridTableBase.GetTypeName(self, row, col)
 
+    def GetAttr(self, row, col, *something):
+        if col == 2:
+            attr = wx.grid.GridCellAttr()
+            attr.SetTextColour(wx.BLUE)
+            attr.SetAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+            attr.SetReadOnly(True)
+            return attr
+
     def GetNumberCols(self):
-        return 2
+        return 3
 
     def GetNumberRows(self):
         return len(self.config["usernames"]) + 1
@@ -42,7 +48,8 @@ class CharTable(wx.grid.PyGridTableBase):
                 return u"\u25CF" * 8
             else:
                 return ""
-
+        if col == 2:
+            return "Launch!"
         return "x"
 
     def SetValue(self, row, col, value):
@@ -100,8 +107,12 @@ class LauncherPanel(wx.Panel):
         box = wx.StaticBoxSizer(wx.StaticBox(self, label="Character List"), wx.VERTICAL)
 
         char_list = wx.grid.Grid(self, -1)
-        self.char_table = CharTable(char_list, parent.config)
-        char_list.SetTable(self.char_table)
+        char_list.RegisterDataType(wx.grid.GRID_VALUE_STRING, None, None)
+        char_list.RegisterDataType("PASSWORD", None, PasswordCellEditor())
+        char_list.SetRowLabelSize(40)
+        char_list.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)
+        
+        char_list.SetTable(CharTable(char_list, parent.config))
         launch_all = wx.Button(self, -1, "Launch All")
 
         box.Add(char_list, 1)
@@ -111,6 +122,14 @@ class LauncherPanel(wx.Panel):
 
         self.SetSizer(box)
         self.Layout()
+
+    def OnCellLeftClick(self, evt):
+        if evt.GetCol() == 2:
+            uid = evt.GetRow()
+            if uid < len(self.config["usernames"]):
+                self.parent.launch(self.config["usernames"][uid])
+        else:
+            evt.Skip()
 
     def OnLaunchAll(self, evt):
         for username in self.config["usernames"]:
