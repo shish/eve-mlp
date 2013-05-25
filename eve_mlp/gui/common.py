@@ -1,7 +1,8 @@
 import os
 import sys
+import wx
 
-
+   
 def resource(path):
     ideas = [
         os.path.join(os.path.dirname(sys.argv[0]), path),
@@ -18,7 +19,6 @@ def resource(path):
 
 
 def icon_bundle(fn):
-    import wx
     icons = wx.IconBundle() 
     for sz in [16, 32, 48]: 
         try: 
@@ -27,3 +27,11 @@ def icon_bundle(fn):
         except: 
             pass
     return icons
+
+
+def get_password(parent, title):
+    ped = wx.PasswordEntryDialog(parent, title)
+    ped.ShowModal()
+    pw = ped.GetValue()
+    ped.Destroy()
+    return pw

@@ -1,23 +1,18 @@
 import wx
 import wx.grid
-from eve_mlp.gui.pce import PasswordCellEditor
+
+from eve_mlp.common import Account
 
 
 class CharTable(wx.grid.PyGridTableBase):
-    def __init__(self, grid, config):
+    def __init__(self, grid, main):
         wx.grid.PyGridTableBase.__init__(self)
         self.grid = grid
-        self.config = config
-
-    def GetTypeName(self, row, col):
-        if col == 1:
-            return "PASSWORD"
-        #if col == 2: # and row <= len(self.config["usernames"]):
-        #    return "LAUNCHER"
-        return wx.grid.PyGridTableBase.GetTypeName(self, row, col)
+        self.main = main
+        self.config = main.config
 
     def GetAttr(self, row, col, *something):
-        if col == 2:
+        if col == 1:
             attr = wx.grid.GridCellAttr()
             attr.SetTextColour(wx.BLUE)
             attr.SetAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
@@ -25,35 +20,28 @@ class CharTable(wx.grid.PyGridTableBase):
             return attr
 
     def GetNumberCols(self):
-        return 3
+        return 2
 
     def GetNumberRows(self):
-        return len(self.config["usernames"]) + 1
+        return len(self.config.accounts) + 1
 
     def GetColLabelValue(self, col):
-        return ["Username", "Password", "Action"][col]
+        return ["Setup Name", "Action"][col]
 
     def GetRowLabelValue(self, row):
         return row
 
     def GetValue(self, row, col):
-        if row == len(self.config["usernames"]):
+        if row == len(self.config.accounts):
             return ""
-
         if col == 0:
-            return self.config["usernames"][row]
+            return self.config.accounts[row].confname
         if col == 1:
-            username = self.config["usernames"][row]
-            if username in self.config["passwords"]:
-                return u"\u25CF" * 8
-            else:
-                return ""
-        if col == 2:
             return "Launch!"
         return "x"
 
     def SetValue(self, row, col, value):
-        end = len(self.config["usernames"])
+        end = len(self.config.accounts)
 
         # final row
         if row == end:
@@ -63,34 +51,21 @@ class CharTable(wx.grid.PyGridTableBase):
             else:
                 # final row has had something added to it
                 if col == 0:
-                    self.config["usernames"].append(value)
+                    self.config.accounts.append(Account(self.config.defaults, {"confname": value}))
                     msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, 1)
                     self.grid.ProcessTableMessage(msg)
+                    self.main.OnAccountSelected(row)
 
         # username column
         elif col == 0:
             if value == "":
                 # a username has been deleted
-                username = self.config["usernames"][row]
-                del self.config["usernames"][row]
-                if username in self.config["passwords"]:
-                    del self.config["passwords"][username]
+                del self.config.accounts[row]
                 msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, row, 1)
                 self.grid.ProcessTableMessage(msg)
             else:
                 # a username has been modified
-                self.config["usernames"][row] = value
-
-        # password column
-        elif col == 1:
-            username = self.config["usernames"][row]
-            if value == "":
-                # password deleted
-                del self.config["passwords"][username]
-            else:
-                # password set
-                self.config["passwords"][username] = value
-
+                self.config.accounts[row].confname = value
 
         msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.grid.ProcessTableMessage(msg)
@@ -108,11 +83,11 @@ class LauncherPanel(wx.Panel):
 
         char_list = wx.grid.Grid(self, -1)
         char_list.RegisterDataType(wx.grid.GRID_VALUE_STRING, None, None)
-        char_list.RegisterDataType("PASSWORD", None, PasswordCellEditor())
-        char_list.SetRowLabelSize(40)
         char_list.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)
-        
-        char_list.SetTable(CharTable(char_list, parent.config))
+        char_list.SetTable(CharTable(char_list, parent))
+        char_list.SetRowLabelSize(40)
+        char_list.SetColSize(0, 150)
+        char_list.SetSizeHints(280, 200)
         launch_all = wx.Button(self, -1, "Launch All")
 
         box.Add(char_list, 1)
@@ -124,13 +99,18 @@ class LauncherPanel(wx.Panel):
         self.Layout()
 
     def OnCellLeftClick(self, evt):
-        if evt.GetCol() == 2:
+        if evt.GetCol() == 0:
             uid = evt.GetRow()
-            if uid < len(self.config["usernames"]):
-                self.parent.launch(self.config["usernames"][uid])
+            if uid < len(self.config.accounts):
+                self.parent.OnAccountSelected(uid)
+
+        if evt.GetCol() == 1:
+            uid = evt.GetRow()
+            if uid < len(self.config.accounts):
+                self.parent.launch(self.config.accounts[uid])
         else:
             evt.Skip()
 
     def OnLaunchAll(self, evt):
-        for username in self.config["usernames"]:
-            self.parent.launch(username)
+        for account in self.config.accounts:
+            self.parent.launch(account)
