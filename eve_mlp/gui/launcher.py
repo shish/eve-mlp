@@ -1,5 +1,6 @@
 import wx
 import wx.grid
+from eve_mlp.gui.pce import PasswordCellEditor
 
 
 class CharTable(wx.grid.PyGridTableBase):
@@ -7,6 +8,14 @@ class CharTable(wx.grid.PyGridTableBase):
         wx.grid.PyGridTableBase.__init__(self)
         self.grid = grid
         self.config = config
+        
+        grid.RegisterDataType(wx.grid.GRID_VALUE_STRING, None, None)
+        grid.RegisterDataType("PASSWORD", None, PasswordCellEditor())
+
+    def GetTypeName(self, row, col):
+        if col == 1:
+            return "PASSWORD"
+        return wx.grid.PyGridTableBase.GetTypeName(self, row, col)
 
     def GetNumberCols(self):
         return 2
@@ -29,7 +38,7 @@ class CharTable(wx.grid.PyGridTableBase):
         if col == 1:
             username = self.config["usernames"][row]
             if username in self.config["passwords"]:
-                return "*" * 8
+                return u"\u25CF" * 8
             else:
                 return ""
 
