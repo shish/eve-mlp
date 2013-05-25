@@ -78,7 +78,7 @@ class MainFrame(wx.Frame):
         except Exception as e:
             pass
         
-        wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform [%s]" % __version__, size=(640, 480))
+        wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform [%s]" % __version__, size=(800, 600))
         self.Bind(wx.EVT_CLOSE, self.OnWinClose)
         try:
             self.SetIcons(icon_bundle(resource("icon.ico")))
