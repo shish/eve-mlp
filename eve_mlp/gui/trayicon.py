@@ -21,8 +21,11 @@ class TrayIcon(wx.TaskBarIcon):
             self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch)
 
         self.menu.AppendSeparator()
-        m_exit = self.menu.Append(wx.ID_EXIT, 'E&xit')
+        m_launch_all = self.menu.Append(3200, 'Launch All')
+        self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_all)
 
+        self.menu.AppendSeparator()
+        m_exit = self.menu.Append(wx.ID_EXIT, 'E&xit')
         self.Bind(wx.EVT_MENU, self.parent.OnClose, m_exit)
 
     def OnPopup(self, event):
@@ -36,4 +39,9 @@ class TrayIcon(wx.TaskBarIcon):
             self.parent.Show()
 
     def OnLaunch(self, evt):
-        self.parent.launch(self.config["usernames"][evt.GetId() - 3000])
+        uid = evt.GetId() - 3000
+        if uid == 200:
+            for username in self.config["usernames"]:
+                self.parent.launch(username)
+        else:
+            self.parent.launch(self.config["usernames"][uid])
