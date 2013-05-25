@@ -87,7 +87,6 @@ class LauncherPanel(wx.Panel):
         char_list.SetTable(CharTable(char_list, parent))
         char_list.SetRowLabelSize(40)
         char_list.SetColSize(0, 150)
-        char_list.SetSizeHints(280, 200)
         launch_all = wx.Button(self, -1, "Launch All")
 
         box.Add(char_list, 1)
@@ -99,17 +98,17 @@ class LauncherPanel(wx.Panel):
         self.Layout()
 
     def OnCellLeftClick(self, evt):
-        if evt.GetCol() == 0:
-            uid = evt.GetRow()
-            if uid < len(self.config.accounts):
+        uid = evt.GetRow()
+        if uid < len(self.config.accounts):
+            if evt.GetCol() == 0:
                 self.parent.OnAccountSelected(uid)
-
-        if evt.GetCol() == 1:
-            uid = evt.GetRow()
-            if uid < len(self.config.accounts):
+            if evt.GetCol() == 1:
                 self.parent.launch(self.config.accounts[uid])
+            # we handled it
+            evt.Skip(False)
         else:
-            evt.Skip()
+            # we can't handle it, skip us
+            evt.Skip(True)
 
     def OnLaunchAll(self, evt):
         for account in self.config.accounts:

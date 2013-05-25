@@ -1,5 +1,15 @@
 import wx
 
+
+def ltrim(x):
+    if not x:
+        return "(Default)"
+    elif len(x) > 20:
+        return "..." + x[-20:]
+    else:
+        return x
+
+
 class AccountPanel(wx.Panel):
     def __init__(self, parent, default=False):
         wx.Panel.__init__(self, parent)
@@ -8,7 +18,8 @@ class AccountPanel(wx.Panel):
 
         self.box_label = wx.StaticBox(self, label="Default Settings")
         box = wx.StaticBoxSizer(self.box_label, wx.VERTICAL)
-        grid = wx.GridSizer(0, 2, 2, 2)
+        grid = wx.FlexGridSizer(0, 2, 2, 2)
+        grid.AddGrowableCol(1)
 
         if not default:
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Setup Name"), 0, wx.EXPAND)
@@ -39,7 +50,7 @@ class AccountPanel(wx.Panel):
             dd = wx.DirDialog(self, "Pick a game folder", self.account.gamepath or ".")
             if dd.ShowModal() == wx.ID_OK:
                 self.account.gamepath = dd.GetPath()
-                self.gamepath.SetLabel(self.account.gamepath)
+                self.gamepath.SetLabel(self.account.gamepath[-20:])
             else:
                 self.account.gamepath = None
                 self.gamepath.SetLabel("(Default)")
@@ -70,7 +81,7 @@ class AccountPanel(wx.Panel):
             self.confname.SetLabel(account.confname or "")
             self.username.SetLabel(account.username or "")
             self.password.SetLabel(account.password or "")
-        self.gamepath.SetLabel(account._gamepath or "(Default)")
+        self.gamepath.SetLabel(ltrim(account._gamepath))
 
         if account._serverid == "tranquility":
             self.serverid.Select(1)
