@@ -89,35 +89,33 @@ class Account(object):
 
 class Config(object):
     def __init__(self):
-        self.defaults = Account(None, {})
+        self.defaults = Account(None, {
+            "confname": None,
+            "username": None,
+            "password": None,
+            "gamepath": ".",
+            "serverid": "tranquility",
+        })
         self.accounts = []
-        self.settings = {}
+        self.settings = {
+            "remember-passwords": False,
+        }
         self.master_password = None
 
     def load(self):
-        config = {
-            "defaults": {
-                "confname": None,
-                "username": None,
-                "password": None,
-                "gamepath": ".",
-                "serverid": "tranquility",
-            },
-            "accounts": [],
-            "settings": {
-                "remember-passwords": False,
-            },
-        }
         try:
-            config.update(json.loads(file(config_path).read()))
+            config = json.loads(file(config_path).read())
+            
+            self.defaults.gamepath = config.get("defaults", {}).get("gamepath")
+            self.defaults.serverid = config.get("defaults", {}).get("serverid")
+            
+            self.accounts = []
+            for acct_data in config["accounts"]:
+                self.accounts.append(Account(self.defaults, acct_data))
+                
+            self.settings.update(config["settings"])
         except:
             log.debug("Couldn't load config file:", exc_info=True)
-            
-        self.defaults = Account(None, config["defaults"])
-        self.accounts = []
-        for acct_data in config["accounts"]:
-            self.accounts.append(Account(self.defaults, acct_data))
-        self.settings = config["settings"]
 
     def save(self):
         config = {
