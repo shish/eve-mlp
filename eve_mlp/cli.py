@@ -4,8 +4,8 @@ import logging
 import argparse
 from getpass import getpass
 
-from .login import do_login, LoginFailed
-from .common import load_config, save_config, encrypt, decrypt, launch
+from eve_mlp.login import do_login, LoginFailed
+from eve_mlp.common import Config, launch, LaunchFailed
 
 
 log = logging.getLogger(__name__)
@@ -16,6 +16,9 @@ class UserError(Exception):
 
 
 def parse_args(args, config):
+    """
+    This needs a lot of re-doing for the account-based config
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--eve-dir", default=config.get("eve-dir"), metavar="DIR",
@@ -57,17 +60,6 @@ def parse_args(args, config):
     if args.usernames:
         config["usernames"] = args.usernames
 
-    # move to the configured directory
-    if args.singularity:
-        if config.get("singularity-dir"):
-            os.chdir(config["singularity-dir"])
-    else:
-        if config.get("eve-dir"):
-            os.chdir(config["eve-dir"])
-
-    if not os.path.exists("bin/ExeFile.exe"):
-        raise UserError("Need to be run from the eve install dir, or use --eve-dir")
-
     # return
     return args
 
@@ -75,21 +67,7 @@ def parse_args(args, config):
 def log_config(args, config):
     log.info("MLP Software:")
     log.info("  Verbosity       : %s", args.verbose)
-    log.info("  Launching       : %s", "Singularity" if args.singularity else "EVE")
     log.info("")
-
-    log.info("Eve Software:")
-    log.info("  Eve dir         : %s", args.eve_dir)
-    log.info("  Singularity dir : %s", args.singularity_dir)
-    log.info("")
-
-    log.info("Users:")
-    passwords = config.get("passwords", {})
-    for username in args.usernames:
-        if username in passwords:
-            log.info("  %s (Password remembered)", username)
-        else:
-            log.info("  %s (No password)", username)
 
 
 def get_logins(args, config):
@@ -121,25 +99,45 @@ def get_logins(args, config):
     return logins
 
 
+def get_account(config, account_name):
+    """
+    Get a launch config by name
+    """
+    for acct in config.accounts:
+        if acct.confname == account_name:
+            return acct
+    raise Exception("No Account named %s" % account_name)
+
+
 def run_mlp(args):
-    config = load_config()
+    config = Config()
+    config.load()
     args = parse_args(args, config)
     log_config(args, config)
+
+    if config.settings["remember-passwords"]:
+        config.master_password = getpass("Enter Master Password: ")
+        config.decrypt_passwords()
+
     logins = get_logins(args, config)
 
-    if not args.forgetful:
-        save_config(config)
-
-    for username, password in logins.items():
+    for account_name in args.accounts:
         try:
-            if args.dry:
-                launch_token = "not-a-real-token"
-            else:
-                launch_token = do_login(username, password)
-            launch(launch_token, args)
+            account = get_account(config, account_name)
+            token = None
+            if account.username and account.password:
+                token = do_login(username, password)
+            launch(config, account, token)
         except LoginFailed as e:
             log.error("Login failed: %s", e)
             return 1
+        except LaunchFailed as e:
+            log.error("Launch failed: %s", e)
+            return 1
+
+    if not args.forgetful:
+        config.encrypt_passwords()
+        config.save()
 
 
 def main(argv=sys.argv):
