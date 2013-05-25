@@ -31,7 +31,7 @@ class CharTable(wx.grid.PyGridTableBase):
             if username in self.config["passwords"]:
                 return "*" * 8
             else:
-                return "-" * 8
+                return ""
 
         return "x"
 
