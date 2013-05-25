@@ -15,3 +15,15 @@ def resource(path):
         if os.path.exists(p):
             return p
     return None
+
+
+def icon_bundle(fn):
+    import wx
+    icons = wx.IconBundle() 
+    for sz in [16, 32, 48]: 
+        try: 
+            icon = wx.Icon(fn, wx.BITMAP_TYPE_ICO, desiredWidth=sz, desiredHeight=sz) 
+            icons.AddIcon(icon) 
+        except: 
+            pass
+    return icons

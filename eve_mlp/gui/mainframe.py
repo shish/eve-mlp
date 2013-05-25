@@ -7,11 +7,12 @@ import wx.html
 import requests
 
 from eve_mlp.common import *
+from eve_mlp.common import __version__
 from eve_mlp.login import do_login, LoginFailed
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
-from eve_mlp.gui.common import resource
+from eve_mlp.gui.common import resource, icon_bundle
 
 
 #
@@ -73,8 +74,22 @@ class MainFrame(wx.Frame):
         return menu_bar
 
     def __init_gui(self, parent):
-        wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform", size=(640, 480))
+        try:
+            # give this process an ID other than "python", else
+            # windows 7 will give it the python icon and group it
+            # with other python windows in the task bar
+            import ctypes
+            myappid = 'code.shishnet.org/eve-mlp'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception as e:
+            pass
+        
+        wx.Frame.__init__(self, parent, -1, "Mobile Launch Platform [%s]" % __version__, size=(640, 480))
         self.Bind(wx.EVT_CLOSE, self.OnWinClose)
+        try:
+            self.SetIcons(icon_bundle(resource("icon.ico")))
+        except Exception as e:
+            pass
 
         self.SetMenuBar(self.__menu())
 
@@ -92,7 +107,8 @@ class MainFrame(wx.Frame):
 
         try:
             self.icon = TrayIcon(self)
-        except:
+        except Exception as e:
+            log.exception("Failed to create tray icon:")
             self.icon = None
 
     def __init__(self, parent):
