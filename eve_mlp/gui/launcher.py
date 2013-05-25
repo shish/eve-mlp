@@ -11,6 +11,7 @@ class CharTable(wx.grid.PyGridTableBase):
         
         grid.RegisterDataType(wx.grid.GRID_VALUE_STRING, None, None)
         grid.RegisterDataType("PASSWORD", None, PasswordCellEditor())
+        grid.SetRowLabelSize(40)
 
     def GetTypeName(self, row, col):
         if col == 1:
