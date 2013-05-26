@@ -20,7 +20,7 @@ class TestCommon(unittest2.TestCase):
     @patch("os.path.exists")
     @patch("subprocess.Popen")
     @patch("platform.system")
-    def test_launch(self, os_type, popen, exists):
+    def test_launch_ok(self, os_type, popen, exists):
         os_type.return_value = "generic"
         exists.return_value = True
 
@@ -32,6 +32,19 @@ class TestCommon(unittest2.TestCase):
 
         popen.assert_called_with('"/home/games/EVE Online/bin/ExeFile.exe" /ssoToken=TOKEN /noconsole', shell=True)
 
+    @patch("os.path.exists")
+    @patch("subprocess.Popen")
+    @patch("platform.system")
+    def test_launch_badpath(self, os_type, popen, exists):
+        os_type.return_value = "generic"
+        exists.return_value = False
+
+        co = Config()
+        co.defaults.gamepath = "/home/games/EVE Online"
+        lc = LaunchConfig(co.defaults)
+        to = "TOKEN"
+
+        self.assertRaises(LaunchFailed, launch, co, lc, to)
 
 class TestLaunchConfig(unittest2.TestCase):
     # attribute setting / getting / inheriting is the tricky bit
