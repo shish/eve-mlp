@@ -22,8 +22,8 @@ def parse_args(args, config):
     parser = argparse.ArgumentParser()
 
     # Specific LaunchConfig options
-    parser.add_argument(  # TODO: default: look through config.launches for LaunchConfigs with the 'selected' flag set
-        "--launch", dest="launches", action="append", default=[], metavar="NAME",
+    parser.add_argument(
+        "--launch", dest="launches", action="append", default=[lc.confname for lc in config.launches if lc.selected], metavar="NAME",
         help="Launch configuration to use (can be repeated)")
 
     # Base LaunchConfig options
@@ -35,6 +35,9 @@ def parse_args(args, config):
         help="Which server to connect to (tranquility (default) or singularity)")
 
     # App options
+    parser.add_argument(
+        "-l", "--list", default=False, action="store_true",
+        help="List known launch configurations")
     parser.add_argument(
         "--save-passwords", default=config.settings["remember-passwords"], action="store_true",
         help="Save passwords for all alts (encrypted with one master password)")
@@ -73,35 +76,6 @@ def log_config(args, config):
     log.info("")
 
 
-def get_logins(args, config):
-    usernames = args.usernames or [raw_input("Username: "), ]
-
-    master_pass = None
-    if args.save_passwords:
-        master_pass = getpass("Enter master password: ")
-
-    logins = {}
-    for username in usernames:
-        password = None
-
-        if username in config.get("passwords", {}):
-            if not master_pass:
-                master_pass = getpass("Enter master password: ")
-            password = decrypt(config["passwords"][username], master_pass)
-
-        if not password:
-            if len(usernames) == 1:
-                password = getpass("Password: ")
-            else:
-                password = getpass("%s's Password: " % username)
-            if args.save_passwords:
-                config["passwords"][username] = encrypt(password, master_pass)
-
-        logins[username] = password
-
-    return logins
-
-
 def get_launch_config(config, name):
     """
     Get a launch config by name
@@ -112,18 +86,14 @@ def get_launch_config(config, name):
     raise Exception("No LaunchConfig named %s" % name)
 
 
-def run_mlp(args):
-    config = Config()
-    config.load()
-    args = parse_args(args, config)
-    log_config(args, config)
+def collect_passwords(args, config):
+    for name in args.launches:
+        launch_config = get_launch_config(config, name)
+        if launch_config.username and not launch_config.password:
+            launch_config.password = getpass("Enter password for %s: " % launch_config.username)
 
-    if config.settings["remember-passwords"]:
-        config.master_password = getpass("Enter Master Password: ")
-        config.decrypt_passwords()
 
-    logins = get_logins(args, config)
-
+def launch_all(args, config):
     for name in args.launches:
         try:
             launch_config = get_launch_config(config, name)
@@ -137,6 +107,35 @@ def run_mlp(args):
         except LaunchFailed as e:
             log.error("Launch failed: %s", e)
             return 1
+
+
+def run_mlp(args):
+    config = Config()
+    config.load()
+    args = parse_args(args, config)
+    log_config(args, config)
+
+    if config.settings["remember-passwords"]:
+        config.master_password = getpass("Enter Master Password: ")
+        config.decrypt_passwords()
+
+    if args.list:
+        fmt = "%(confname)-20.20s %(selected)-9.9s %(serverid)-12.12s %(username)-10.10s %(gamepath)s"
+        names = {
+            "confname": "Launch Config Name",
+            "selected": "Selected",
+            "serverid": "Server",
+            "username": "Username",
+            "gamepath": "Game Path",
+        }
+        print fmt % names
+        print "~"*72
+        print fmt % config.defaults, "   (Defaults)"
+        for lc in config.launches:
+            print fmt % lc
+    else:
+        collect_passwords(args, config)
+        launch_all(args, config)
 
     if not args.forgetful:
         config.encrypt_passwords()
