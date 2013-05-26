@@ -24,7 +24,7 @@ class LaunchConfig(object):
     usernames & passwords.
     """
 
-    attrs = ["confname", "username", "password", "gamepath", "serverid"]
+    attrs = ["confname", "username", "password", "gamepath", "serverid", "selected"]
 
     def __init__(self, base, custom):
         self.base = base
@@ -95,6 +95,17 @@ class LaunchConfig(object):
     def serverid(self, value):
         self._serverid = value
 
+    @property
+    def selected(self):
+        if self._selected:
+            return self._selected
+        if self.base:
+            return self.base._selected
+
+    @selected.setter
+    def selected(self, value):
+        self._selected = value
+
 
 class Config(object):
     """
@@ -110,6 +121,7 @@ class Config(object):
             "password": None,
             "gamepath": ".",
             "serverid": "tranquility",
+            "selected": False,
         })
         self.launches = []
         self.settings = {
