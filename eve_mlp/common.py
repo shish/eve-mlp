@@ -14,7 +14,7 @@ config_path = os.path.expanduser("~/.config/eve-mlp.conf")
 log = logging.getLogger(__name__)
 
 
-class LaunchConfig(object):
+class LaunchConfig(dict):
     """
     Holds the settings for a given launch configuration.
 
@@ -24,87 +24,49 @@ class LaunchConfig(object):
     usernames & passwords.
     """
 
-    attrs = ["confname", "username", "password", "gamepath", "serverid", "selected"]
+    def __init__(self, base=None, custom={}):
+        defaults = {
+            "confname": None,
+            "username": None,
+            "password": None,
+            "gamepath": None,
+            "serverid": None,
+            "selected": None,
+        }
+        defaults.update(custom)
+        dict.__init__(self, defaults)
 
-    def __init__(self, base, custom):
         self.base = base
-        for attr in self.attrs:
-            setattr(self, "_"+attr, custom.get(attr))
+        self._initialised = True
 
     def __json__(self):
-        d = {}
-        for attr in self.attrs:
-            d[attr] = getattr(self, "_"+attr)
-        return d
+        return self  # we are a dict already \o/
 
     def __str__(self):
-        return "LaunchConfig(%r)" % self._confname
+        return "LaunchConfig(%r)" % self.confname
 
-    @property
-    def confname(self):
-        if self._confname:
-            return self._confname
-        if self.base:
-            return self.base._confname
+    def __getattr__(self, attr):
+        local = False
+        if attr[0] == "_":
+            attr = attr[1:]
+            local = True
 
-    @confname.setter
-    def confname(self, value):
-        self._confname = value
+        try:
+            if self.__getitem__(attr):
+                return self.__getitem__(attr)
+            if self.base and not local:
+                return self.base.__getitem__(attr)
+        except KeyError:
+            raise AttributeError(attr)
 
-    @property
-    def username(self):
-        if self._username:
-            return self._username
-        if self.base:
-            return self.base._username
+    def __setattr__(self, attr, value):
+        if not self.__dict__.has_key('_initialised'):  # this test allows attributes to be set in the __init__ method
+            return dict.__setattr__(self, attr, value)
 
-    @username.setter
-    def username(self, value):
-        self._username = value
-
-    @property
-    def password(self):
-        if self._password:
-            return self._password
-        if self.base:
-            return self.base._password
-
-    @password.setter
-    def password(self, value):
-        self._password = value
-
-    @property
-    def gamepath(self):
-        if self._gamepath:
-            return self._gamepath
-        if self.base:
-            return self.base._gamepath
-
-    @gamepath.setter
-    def gamepath(self, value):
-        self._gamepath = value
-
-    @property
-    def serverid(self):
-        if self._serverid:
-            return self._serverid
-        if self.base:
-            return self.base._serverid
-
-    @serverid.setter
-    def serverid(self, value):
-        self._serverid = value
-
-    @property
-    def selected(self):
-        if self._selected:
-            return self._selected
-        if self.base:
-            return self.base._selected
-
-    @selected.setter
-    def selected(self, value):
-        self._selected = value
+        elif self.__dict__.has_key(attr):       # any normal attributes are handled normally
+            dict.__setattr__(self, attr, value)
+        else:
+            self.__setitem__(attr, value)
 
 
 class Config(object):
