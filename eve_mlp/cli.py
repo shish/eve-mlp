@@ -25,13 +25,16 @@ def parse_args(args, config):
     parser.add_argument(
         "--launch", dest="launches", action="append", default=[lc.confname for lc in config.launches if lc.selected], metavar="NAME",
         help="Launch configuration to use (can be repeated)")
+    parser.add_argument(
+        "--config", dest="config", metavar="NAME",
+        help="Launch configuration to configure")
 
     # Base LaunchConfig options
     parser.add_argument(
-        "--game-path", default=config.defaults.gamepath, metavar="DIR",
+        "--gamepath", default=None, metavar="DIR",
         help="Point to the location of the Eve install folder")
     parser.add_argument(
-        "--server", default="tranquility",
+        "--serverid", default=None,
         help="Which server to connect to (tranquility (default) or singularity)")
 
     # App options
@@ -58,11 +61,19 @@ def parse_args(args, config):
     module_log.setLevel(logging.WARNING - args.verbose * 10)
 
     # update remembered config
-    if args.game_path:
-        config.defaults.gamepath = args.game_path
+    if args.gamepath:
+        if args.config:
+            lc = get_launch_config(config, args.config)
+            lc.gamepath = args.gamepath
+        else:
+            config.defaults.gamepath = args.gamepath
 
-    if args.server:
-        config.defaults.serverid = args.server
+    if args.serverid:
+        if args.config:
+            lc = get_launch_config(config, args.config)
+            lc.serverid = args.serverid
+        else:
+            config.defaults.serverid = args.serverid
 
     config.settings["remember-passwords"] = args.save_passwords
 
@@ -133,6 +144,8 @@ def run_mlp(args):
         print fmt % config.defaults, "   (Defaults)"
         for lc in config.launches:
             print fmt % lc
+    elif args.config:
+        pass
     else:
         collect_passwords(args, config)
         launch_all(args, config)

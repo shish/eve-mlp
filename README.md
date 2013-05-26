@@ -31,16 +31,19 @@ Run
 Run the gui:
     eve-gmlp
     
-Command line with a specific eve install:
-    eve-mlp --eve-dir /home/bob/Games/EVE
+Set the default game path:
+    eve-mlp --gamepath /home/bob/Games/EVE
+
+Add a new launch configuration with given username and custom path:
+    eve-mlp --config MyConfig --username Fred --gamepath /home/fred/Games/EVE
+
+Update the new config to be run by default (ie, if no configs are explicitly selected):
+    eve-mlp --config MyConfig --selected
 
 Launch multiple alts at once:
-    eve-mlp --username Bob --username Fred --username Jim --username Dave
+    eve-mlp --launch MyConfig --launch CynoAlt-Screen2 --launch MarketAlt-LowGraphics
 
-Store the passwords for known usernames, but don't actually launch eve:
-    eve-mlp --save-passwords --dry
-
-Launch all of your alts in one go, only needing to enter one master password:
+Launch all of your selected alts in one go:
     eve-mlp
 ```
 
