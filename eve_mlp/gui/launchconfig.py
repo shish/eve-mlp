@@ -67,6 +67,13 @@ class LaunchConfigPanel(wx.Panel):
             self.Bind(wx.EVT_TEXT, set_password, self.password)
             grid.Add(self.password, 1, wx.EXPAND)
 
+            grid.Add(wx.StaticText(self, wx.ID_ANY, "Selected"), 0, wx.ALIGN_CENTER_VERTICAL)
+            self.selected = wx.CheckBox(self)
+            def set_selected(evt):
+                self.launch_config.selected = self.selected.IsChecked()
+            self.Bind(wx.EVT_CHECKBOX, set_selected, self.selected)
+            grid.Add(self.selected, 1, wx.EXPAND)
+
         grid.Add(wx.StaticText(self, wx.ID_ANY, "Game Path"), 0, wx.ALIGN_CENTER_VERTICAL)
         self.gamepath = wx.Button(self, label="")
         def set_gamepath(evt):
@@ -106,6 +113,7 @@ class LaunchConfigPanel(wx.Panel):
             self.confname.SetValue(launch_config.confname or "")
             self.username.SetValue(launch_config.username or "")
             self.password.SetValue(launch_config.password or "")
+            self.selected.SetValue(launch_config.selected or False)
         self.gamepath.SetLabel(ltrim(launch_config._gamepath))
 
         if launch_config._serverid == "tranquility":

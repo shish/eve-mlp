@@ -21,8 +21,10 @@ class TrayIcon(wx.TaskBarIcon):
             self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch)
 
         self.menu.AppendSeparator()
-        m_launch_all = self.menu.Append(3200, 'Launch All')
-        self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_all)
+        #m_launch_all = self.menu.Append(3200, 'Launch All')
+        #self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_all)
+        m_launch_sel = self.menu.Append(3201, 'Launch Selected')
+        self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_sel)
 
         self.menu.AppendSeparator()
         m_exit = self.menu.Append(wx.ID_EXIT, 'E&xit')
@@ -43,5 +45,9 @@ class TrayIcon(wx.TaskBarIcon):
         if uid == 200:
             for launch_config in self.config.launches:
                 self.main.launch(launch_config)
+        elif uid == 201:
+            for launch_config in self.config.launches:
+                if launch_config.selected:
+                    self.main.launch(launch_config)
         else:
             self.main.launch(self.config.launches[uid])

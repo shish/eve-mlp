@@ -94,12 +94,16 @@ class LauncherPanel(wx.Panel):
         char_list.SetTable(CharTable(char_list, parent))
         char_list.SetRowLabelSize(40)
         char_list.SetColSize(0, 150)
-        launch_all = wx.Button(self, -1, "Launch All")
+
+        #launch_all = wx.Button(self, -1, "Launch All")
+        #self.Bind(wx.EVT_BUTTON, self.OnLaunchAll, launch_all)
+
+        launch_sel = wx.Button(self, -1, "Launch Selected")
+        self.Bind(wx.EVT_BUTTON, self.OnLaunchSel, launch_sel)
 
         box.Add(char_list, 1)
-        box.Add(launch_all, 0, wx.EXPAND)
-
-        self.Bind(wx.EVT_BUTTON, self.OnLaunchAll, launch_all)
+        #box.Add(launch_all, 0, wx.EXPAND)
+        box.Add(launch_sel, 0, wx.EXPAND)
 
         self.SetSizer(box)
         self.Layout()
@@ -122,3 +126,8 @@ class LauncherPanel(wx.Panel):
     def OnLaunchAll(self, evt):
         for launch_config in self.config.launches:
             self.parent.launch(launch_config)
+
+    def OnLaunchSel(self, evt):
+        for launch_config in self.config.launches:
+            if launch_config.selected:
+                self.parent.launch(launch_config)
