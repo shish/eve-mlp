@@ -48,7 +48,7 @@ class LaunchConfigPanel(wx.Panel):
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Setup Name"), 0, wx.ALIGN_CENTER_VERTICAL)
             self.confname = wx.TextCtrl(self)
             def set_confname(evt):
-                if self.confname.GetLabel():
+                if self.confname.GetValue():
                     self.launch_config.confname = self.confname.GetValue()
             self.Bind(wx.EVT_TEXT, set_confname, self.confname)
             grid.Add(self.confname, 1, wx.EXPAND)
@@ -67,12 +67,12 @@ class LaunchConfigPanel(wx.Panel):
             self.Bind(wx.EVT_TEXT, set_password, self.password)
             grid.Add(self.password, 1, wx.EXPAND)
 
-            grid.Add(wx.StaticText(self, wx.ID_ANY, "Selected"), 0, wx.ALIGN_CENTER_VERTICAL)
-            self.selected = wx.CheckBox(self)
-            def set_selected(evt):
-                self.launch_config.selected = self.selected.IsChecked()
-            self.Bind(wx.EVT_CHECKBOX, set_selected, self.selected)
-            grid.Add(self.selected, 1, wx.EXPAND)
+            #grid.Add(wx.StaticText(self, wx.ID_ANY, "Selected"), 0, wx.ALIGN_CENTER_VERTICAL)
+            #self.selected = wx.CheckBox(self)
+            #def set_selected(evt):
+            #    self.launch_config.selected = self.selected.IsChecked()
+            #self.Bind(wx.EVT_CHECKBOX, set_selected, self.selected)
+            #grid.Add(self.selected, 1, wx.EXPAND)
 
         grid.Add(wx.StaticText(self, wx.ID_ANY, "Game Path"), 0, wx.ALIGN_CENTER_VERTICAL)
         self.gamepath = wx.Button(self, label="")
@@ -106,15 +106,15 @@ class LaunchConfigPanel(wx.Panel):
     def set_launch_config(self, launch_config):
         self.launch_config = launch_config
 
-        log.info("Setting launch_config editor to use %s", launch_config)
+        # log.info("Setting launch_config editor to use %s", launch_config)
 
-        self.box_label.SetLabel("%s's settings" % launch_config.confname if launch_config.confname else "Default Settings")
+        self.box_label.SetLabel("%s's Settings" % launch_config.confname if launch_config.confname else "Default Settings")
         if not self.default:
             self.confname.SetValue(launch_config.confname or "")
             self.username.SetValue(launch_config.username or "")
             self.password.SetValue(launch_config.password or "")
-            self.selected.SetValue(launch_config.selected or False)
-        self.gamepath.SetLabel(ltrim(launch_config._gamepath))
+            #self.selected.SetValue(launch_config.selected or False)
+        self.gamepath.SetLabel(launch_config._gamepath or "(Default)")
 
         if launch_config._serverid == "tranquility":
             self.serverid.Select(1)
@@ -122,3 +122,24 @@ class LaunchConfigPanel(wx.Panel):
             self.serverid.Select(2)
         else:
             self.serverid.Select(0)
+
+
+class ConfigPanel(wx.Panel):
+    def __init__(self, parent, main):
+        wx.Panel.__init__(self, parent)
+
+        box = wx.BoxSizer(wx.VERTICAL)
+
+        self.launch_config_edit = LaunchConfigPanel(self, False)
+        if not main.config.launches:
+            main.config.launches.append(LaunchConfig(main.config.defaults, {"confname": "Main Setup"}))
+        self.launch_config_edit.set_launch_config(main.config.launches[0])
+
+        self.defaults = LaunchConfigPanel(self, True)
+        self.defaults.set_launch_config(main.config.defaults)
+
+        box.Add(self.launch_config_edit, 1, wx.EXPAND)
+        box.Add(self.defaults, 0, wx.EXPAND)
+
+        self.SetSizer(box)
+        self.Layout()

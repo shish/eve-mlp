@@ -14,7 +14,7 @@ from eve_mlp.login import do_login, LoginFailed
 from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
-from eve_mlp.gui.launchconfig import LaunchConfigPanel
+from eve_mlp.gui.config import ConfigPanel
 
 
 log = logging.getLogger(__name__)
@@ -63,6 +63,7 @@ class MainFrame(wx.Frame):
         return menu_bar
 
     def __init_gui(self, parent):
+        # init window
         try:
             # give this process an ID other than "python", else
             # windows 7 will give it the python icon and group it
@@ -80,31 +81,29 @@ class MainFrame(wx.Frame):
         except Exception as e:
             pass
 
+        # bars
         self.SetMenuBar(self.__menu())
-
-        self.launcher = LauncherPanel(self, self.config)
-        self.news = NewsPanel(self, self.config)
-        self.launch_config_edit = LaunchConfigPanel(self, False)
-        if not self.config.launches:
-            self.config.launches.append(LaunchConfig(self.config.defaults, {"confname": "Main Setup"}))
-        self.launch_config_edit.set_launch_config(self.config.launches[0])
-        self.defaults = LaunchConfigPanel(self, True)
-        self.defaults.set_launch_config(self.config.defaults)
-
-        left_box = wx.BoxSizer(wx.VERTICAL)
-        left_box.Add(self.launcher, 1, wx.ALL|wx.EXPAND, 0)
-        left_box.Add(self.launch_config_edit, 0, wx.ALL|wx.EXPAND, 0)
-        left_box.Add(self.defaults, 0, wx.ALL|wx.EXPAND, 0)
-
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(left_box,             0, wx.ALL|wx.EXPAND, 0)
-        box.Add(self.news,            1, wx.ALL|wx.EXPAND, 0)
-
-        self.SetAutoLayout(True)
-        self.SetSizer(box)
-        self.Layout()
         self.statusbar = self.CreateStatusBar()
 
+        # body of the window
+        self.launcher = LauncherPanel(self, self.config)
+        self.tabs = wx.Notebook(self)
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.launcher, 0, wx.EXPAND)
+        box.Add(self.tabs, 1, wx.EXPAND)
+        #self.SetAutoLayout(True)
+        self.SetSizer(box)
+        self.Layout()
+
+        # add content to tabs
+        self.news_panel = NewsPanel(self.tabs, "http://code.shishnet.org/eve-mlp/news.html")
+        self.config_panel = ConfigPanel(self.tabs, self)
+
+        self.tabs.AddPage(self.news_panel, "MLP News")
+        self.tabs.AddPage(self.config_panel, "Settings")
+
+        # show the window and tray icon (if desired)
         show = True
         try:
             self.icon = TrayIcon(self)
@@ -159,7 +158,8 @@ class MainFrame(wx.Frame):
         self.config.settings["start-tray"] = self.m_start_tray.IsChecked()
 
     def OnLaunchConfigSelected(self, idx):
-        self.launch_config_edit.set_launch_config(self.config.launches[idx])
+        self.config_panel.launch_config_edit.set_launch_config(self.config.launches[idx])
+        self.tabs.SetSelection(1)
 
     def OnAbout(self, evt):
         import eve_mlp.common as common
