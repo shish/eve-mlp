@@ -1,6 +1,8 @@
 import wx
 import logging
 
+from eve_mlp.common import LaunchConfig
+
 
 log = logging.getLogger(__name__)
 

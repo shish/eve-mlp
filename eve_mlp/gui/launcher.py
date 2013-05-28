@@ -102,6 +102,8 @@ class LauncherPanel(wx.Panel):
 
     def OnDelSetup(self, evt):
         del self.config.launches[self.selected_id]
+        if len(self.config.launches) == 0:  # don't allow the config list to be totally empty
+            self.config.launches.append(LaunchConfig(self.config.defaults, {"confname": "New Setup"}))
         self.selected_id = 0
         self.main.OnLaunchConfigSelected(0)
         self.update()
