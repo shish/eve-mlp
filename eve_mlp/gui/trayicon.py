@@ -23,7 +23,7 @@ class TrayIcon(wx.TaskBarIcon):
         self.menu.AppendSeparator()
         #m_launch_all = self.menu.Append(3200, 'Launch All')
         #self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_all)
-        m_launch_sel = self.menu.Append(3201, 'Launch Selected')
+        m_launch_sel = self.menu.Append(3201, 'Launch Ticked')
         self.Bind(wx.EVT_MENU, self.OnLaunch, m_launch_sel)
 
         self.menu.AppendSeparator()
