@@ -1,6 +1,7 @@
 import os
-
 from setuptools import setup, find_packages
+
+from eve_mlp import __version__
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.md')).read()
@@ -20,7 +21,7 @@ requires = [
 
 setup(
     name='eve-mlp',
-    version='0.0',
+    version=__version__,
     description='Mobile Launch Platform for EVE Online',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

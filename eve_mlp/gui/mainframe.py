@@ -6,8 +6,8 @@ import wx.grid
 import wx.html
 import requests
 
+from eve_mlp import __version__
 from eve_mlp.common import *
-from eve_mlp.common import __version__
 from eve_mlp.gui.common import *
 
 from eve_mlp.login import do_login, LoginFailed
