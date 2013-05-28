@@ -46,6 +46,7 @@ class TestCommon(unittest2.TestCase):
 
         self.assertRaises(LaunchFailed, launch, co, lc, to)
 
+
 class TestLaunchConfig(unittest2.TestCase):
     # attribute setting / getting / inheriting is the tricky bit
     def test_basic(self):
@@ -98,4 +99,3 @@ class TestLaunchConfig(unittest2.TestCase):
     def test_str(self):
         lc = LaunchConfig(None, {"confname": "My Config"})
         self.assertEqual(str(lc), "LaunchConfig('My Config')")
-

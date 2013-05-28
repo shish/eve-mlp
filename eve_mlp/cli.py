@@ -140,7 +140,7 @@ def run_mlp(args):
             "gamepath": "Game Path",
         }
         print fmt % names
-        print "~"*72
+        print "~" * 72
         print fmt % config.defaults, "   (Defaults)"
         for lc in config.launches:
             print fmt % lc

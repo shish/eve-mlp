@@ -60,10 +60,10 @@ class LaunchConfig(dict):
             raise AttributeError(attr)
 
     def __setattr__(self, attr, value):
-        if not self.__dict__.has_key('_initialised'):  # this test allows attributes to be set in the __init__ method
+        if '_initialised' not in self.__dict__:  # this test allows attributes to be set in the __init__ method
             return dict.__setattr__(self, attr, value)
 
-        elif self.__dict__.has_key(attr):       # any normal attributes are handled normally
+        elif attr in self.__dict__:       # any normal attributes are handled normally
             dict.__setattr__(self, attr, value)
         else:
             self.__setitem__(attr, value)
