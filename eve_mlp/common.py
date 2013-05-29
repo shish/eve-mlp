@@ -104,6 +104,9 @@ class Config(object):
         except:
             log.debug("Couldn't load config file:", exc_info=True)
 
+        if not self.launches:
+            self.launches.append(LaunchConfig(self.defaults, {"confname": "Main Setup"}))
+
     def save(self):
         config = {
             "defaults": self.defaults.__json__(),

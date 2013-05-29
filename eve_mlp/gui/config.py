@@ -133,8 +133,6 @@ class ConfigPanel(wx.Panel):
         box = wx.BoxSizer(wx.VERTICAL)
 
         self.launch_config_edit = LaunchConfigPanel(self, False)
-        if not main.config.launches:
-            main.config.launches.append(LaunchConfig(main.config.defaults, {"confname": "Main Setup"}))
         self.launch_config_edit.set_launch_config(main.config.launches[0])
 
         self.defaults = LaunchConfigPanel(self, True)

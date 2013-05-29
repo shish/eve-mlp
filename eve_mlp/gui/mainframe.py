@@ -166,7 +166,7 @@ class MainFrame(wx.Frame):
         info = wx.AboutDialogInfo()
         info.SetName("Mobile Launch Platform")
         info.SetDescription("A cross-platform EVE Online launcher")
-        info.SetVersion(common.__version__)
+        info.SetVersion(__version__)
         info.SetCopyright("(c) Shish 2013 ('Shish Tukay' in game)")
         info.SetWebSite("https://github.com/shish/eve-mlp")
         info.AddDeveloper("Shish <webmaster@shishnet.org>")
