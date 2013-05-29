@@ -125,7 +125,7 @@ class Config(object):
         if self.settings["remember-passwords"]:
             for launch_config in self.launches:
                 if launch_config.password:
-                    launch_config.password = decrypt(launch_config.password, self.master_password)
+                    launch_config.password = decrypt(launch_config.password, self.master_password, pad=True).decode("utf8")
         else:
             for launch_config in self.launches:
                 if launch_config.password:
@@ -135,17 +135,19 @@ class Config(object):
         if self.settings["remember-passwords"]:
             for launch_config in self.launches:
                 if launch_config.password:
-                    launch_config.password = encrypt(launch_config.password, self.master_password)
+                    launch_config.password = encrypt(launch_config.password.encode("utf8"), self.master_password, pad=True)
         else:
             for launch_config in self.launches:
                 if launch_config.password:
                     launch_config.password = None
 
 
-def encrypt(cleartext, key):
+def encrypt(cleartext, key, text=False, pad=False):
     try:
         moo = aes.AESModeOfOperation()
 
+        if pad:
+            cleartext = cleartext + chr(0) + os.urandom(32 - (len(cleartext) + 1) % 32)
         cypherkey = [ord(x) for x in hashlib.md5(key).digest()]
         iv = [ord(x) for x in os.urandom(16)]
 
@@ -156,7 +158,7 @@ def encrypt(cleartext, key):
         return None
 
 
-def decrypt(data, key):
+def decrypt(data, key, text=False, pad=False):
     try:
         moo = aes.AESModeOfOperation()
 
@@ -164,6 +166,10 @@ def decrypt(data, key):
         mode, orig_len, ciph, iv = json.loads(data)
 
         cleartext = moo.decrypt(ciph, orig_len, mode, cypherkey, moo.aes.keySize["SIZE_128"], iv)
+
+        if pad:
+            cleartext = cleartext.partition("\x00")[0]
+
         return cleartext
     except Exception as e:
         log.error("Error decrypting data: %s", e)

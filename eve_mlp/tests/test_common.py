@@ -10,12 +10,35 @@ class TestCommon(unittest2.TestCase):
         encrypted1 = encrypt(plaintext, "password")
         encrypted2 = encrypt(plaintext, "password")
         self.assertNotEqual(encrypted1, encrypted2)
+        self.assertNotEqual(encrypted1, None)
 
     def test_decrypt(self):
         plaintext = "Hello!"
         encrypted = encrypt(plaintext, "password")
         decrypted = decrypt(encrypted, "password")
         self.assertEqual(plaintext, decrypted)
+        self.assertNotEqual(plaintext, None)
+
+    def test_encrypt_pad(self):
+        plaintext = "Hello!"
+        encrypted1 = encrypt(plaintext, "password", True)
+        encrypted2 = encrypt(plaintext, "password", True)
+        self.assertNotEqual(encrypted1, encrypted2)
+        self.assertNotEqual(encrypted1, None)
+
+    def test_decrypt_pad(self):
+        plaintext = "Hello!"
+        encrypted = encrypt(plaintext, "password", True)
+        decrypted = decrypt(encrypted, "password", True)
+        self.assertEqual(plaintext, decrypted)
+        self.assertNotEqual(plaintext, None)
+
+    def test_decrypt_unpad(self):
+        plaintext = "Hello!"
+        encrypted = encrypt(plaintext, "password")
+        decrypted = decrypt(encrypted, "password", True)
+        self.assertEqual(plaintext, decrypted)
+        self.assertNotEqual(plaintext, None)
 
     @patch("os.path.exists")
     @patch("subprocess.Popen")
