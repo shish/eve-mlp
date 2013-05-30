@@ -99,9 +99,11 @@ class MainFrame(wx.Frame):
         # add content to tabs
         self.news_panel = NewsPanel(self.tabs, "http://code.shishnet.org/eve-mlp/news.html")
         self.config_panel = ConfigPanel(self.tabs, self)
+        self.help_panel = NewsPanel(self.tabs, resource("help.html"))
 
         self.tabs.AddPage(self.news_panel, "MLP News")
         self.tabs.AddPage(self.config_panel, "Settings")
+        self.tabs.AddPage(self.help_panel, "Help")
 
         # show the window and tray icon (if desired)
         show = True
