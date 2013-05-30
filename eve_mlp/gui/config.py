@@ -1,4 +1,5 @@
 import wx
+import os
 import logging
 
 from eve_mlp.common import LaunchConfig
@@ -81,8 +82,15 @@ class LaunchConfigPanel(wx.Panel):
         def set_gamepath(evt):
             dd = wx.DirDialog(self, "Pick a game folder", self.launch_config.gamepath or ".")
             if dd.ShowModal() == wx.ID_OK:
-                self.launch_config.gamepath = dd.GetPath()
-                self.gamepath.SetLabel(self.launch_config.gamepath[-20:])
+                _path = dd.GetPath()
+                if os.path.exists(os.path.join(_path, "bin", "ExeFile.exe")):
+                    path = _path
+                elif os.path.exists(os.path.join(_path, "..", "bin", "ExeFile.exe")):
+                    path = os.path.join(_path, "..")
+                else:
+                    path = "Invalid (bin/ExeFile.exe not found)"
+                self.launch_config.gamepath = _path
+                self.gamepath.SetLabel(self.launch_config.gamepath)
             else:
                 self.launch_config.gamepath = None
                 self.gamepath.SetLabel("(Default)")
