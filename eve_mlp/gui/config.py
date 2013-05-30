@@ -84,12 +84,15 @@ class LaunchConfigPanel(wx.Panel):
             if dd.ShowModal() == wx.ID_OK:
                 _path = dd.GetPath()
                 if os.path.exists(os.path.join(_path, "bin", "ExeFile.exe")):
+                    log.info("Got valid dir")
                     path = _path
                 elif os.path.exists(os.path.join(_path, "..", "bin", "ExeFile.exe")):
-                    path = os.path.join(_path, "..")
+                    log.info("Parent is valid dir")
+                    path = os.path.abspath(os.path.join(_path, ".."))
                 else:
-                    path = "Invalid (bin/ExeFile.exe not found)"
-                self.launch_config.gamepath = _path
+                    log.info("Invalid game dir")
+                    return
+                self.launch_config.gamepath = path
                 self.gamepath.SetLabel(self.launch_config.gamepath)
             else:
                 self.launch_config.gamepath = None
