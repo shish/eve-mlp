@@ -109,6 +109,17 @@ class TestLaunchConfig(unittest2.TestCase):
         lc.serverid = None
         self.assertEqual(lc.serverid, "tranquility")
 
+    def test_override_attr_false(self):
+        # test that a child can override the base
+        base = LaunchConfig(None, {"console": True})
+        lc = LaunchConfig(base, {})
+        # false is a valid setting, don't go for the parent
+        lc.console = False
+        self.assertEqual(lc.console, False)
+        # none = do go for the parent
+        lc.console = None
+        self.assertEqual(lc.console, True)
+
     # other bits
     def test_json(self):
         base = LaunchConfig(None, {"serverid": "tranquility"})

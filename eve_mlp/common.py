@@ -29,6 +29,9 @@ class LaunchConfig(dict):
             "gamepath": None,
             "serverid": None,
             "selected": None,
+            "console": None,
+            "winecmd": None,
+            "wineflags": None,
         }
         defaults.update(custom)
         dict.__init__(self, defaults)
@@ -49,7 +52,7 @@ class LaunchConfig(dict):
             local = True
 
         try:
-            if self.__getitem__(attr):
+            if self.__getitem__(attr) != None:
                 return self.__getitem__(attr)
             if self.base and not local:
                 return self.base.__getitem__(attr)
@@ -81,6 +84,9 @@ class Config(object):
             "gamepath": ".",
             "serverid": "tranquility",
             "selected": False,
+            "console": False,
+            "winecmd": "wine",
+            "wineflags": None,
         })
         self.launches = []
         self.settings = {
@@ -192,15 +198,21 @@ def launch(config, launch_config, launch_token):
     if config.settings.get("dry"):
         cmd.append("echo")
     if platform.system() == "Linux":
-        cmd.append("wine")
+        cmd.append(launch_config.winecmd)
+        if launch_config.wineflags:
+            cmd.append(launch_config.wineflags)
 
     # run the app
     cmd.append('"' + os.path.join(launch_config.gamepath, "bin", "ExeFile.exe") + '"')
     if launch_token:
         cmd.append("/ssoToken=" + launch_token)
-    cmd.append("/noconsole")
 
     # app flags
+    if launch_config.console:
+        cmd.append("/console")
+    else:
+        cmd.append("/noconsole")
+
     if launch_config.serverid == "singularity":
         cmd.append("/server:Singularity")
 
