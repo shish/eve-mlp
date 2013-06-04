@@ -1,6 +1,7 @@
 import os
 import sys
 import wx
+import logging
 
 
 def resource(path):
@@ -26,6 +27,8 @@ def resource(path):
     for p in ideas:
         if os.path.exists(p):
             return p
+    logging.warn("Can't find %s" % path)
+    logging.debug("Tried: %r" % ideas)
     return None
 
 
