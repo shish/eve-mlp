@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+"""
+Trying to keep compile_linux.sh, compile_windows.bat, and compile_osx.sh
+in sync is a pain. Also, because the windows command line is terrible,
+trying to do anything at all in compile_windows.bat is also a pain.
+
+This is an ugly bloated mess, but it seems better than the alternatives...
+"""
+
 import subprocess
 import os
 import platform
