@@ -16,6 +16,7 @@ def resource(path):
     """
     ideas = [
         os.path.join(os.path.dirname(sys.argv[0]), path),
+        os.path.join(getattr(sys, "_MEIPASS", "/"), path),
         os.path.join(os.environ.get("_MEIPASS2", "/"), path),
         path,
     ]
