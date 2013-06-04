@@ -1,6 +1,7 @@
 import wx
 import os
 import logging
+import platform
 
 from eve_mlp.common import LaunchConfig
 
@@ -111,6 +112,14 @@ class LaunchConfigPanel(wx.Panel):
                 self.launch_config.serverid = s.lower()
         self.serverid.Bind(wx.EVT_COMBOBOX, set_serverid, self.serverid)
         grid.Add(self.serverid, 1, wx.EXPAND)
+
+        if default and platform.system() == "Windows":
+            grid.Add(wx.StaticText(self, wx.ID_ANY, "Show Console"), 0, wx.ALIGN_CENTER_VERTICAL)
+            self.console = wx.CheckBox(self, 6000)
+            def toggle_console(evt):
+                self.launch_config.console = evt.IsChecked()
+            self.Bind(wx.EVT_CHECKBOX, toggle_console, self.console)
+            grid.Add(self.console, 1, wx.EXPAND)
 
         box.Add(grid, 1, wx.EXPAND)
         self.SetSizer(box)
