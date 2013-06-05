@@ -40,7 +40,7 @@ class LaunchConfig(dict):
         self._initialised = True
 
     def __json__(self):
-        return self  # we are a dict already \o/
+        return dict(self)  # we are a dict already \o/
 
     def __str__(self):
         return "LaunchConfig(%r)" % self.confname
