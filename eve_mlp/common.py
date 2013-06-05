@@ -78,15 +78,11 @@ class Config(object):
 
     def __init__(self):
         self.defaults = LaunchConfig(None, {
-            "confname": None,
-            "username": None,
-            "password": None,
             "gamepath": ".",
             "serverid": "tranquility",
             "selected": False,
             "console": False,
             "winecmd": "wine",
-            "wineflags": None,
         })
         self.launches = []
         self.settings = {
@@ -99,8 +95,7 @@ class Config(object):
         try:
             config = json.loads(file(config_path).read())
 
-            self.defaults.gamepath = config.get("defaults", {}).get("gamepath")
-            self.defaults.serverid = config.get("defaults", {}).get("serverid")
+            self.defaults.update(config.get("defaults", {}))
 
             self.launches = []
             for launch_config_data in config["accounts"]:
