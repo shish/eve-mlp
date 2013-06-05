@@ -101,7 +101,7 @@ def collect_passwords(args, config):
     for name in args.launches:
         launch_config = get_launch_config(config, name)
         if launch_config.username and not launch_config.password:
-            launch_config.password = getpass("Enter password for %s: " % launch_config.username)
+            launch_config.password = getpass("Enter password for %s: " % str(launch_config.username))
 
 
 def launch_all(args, config):
