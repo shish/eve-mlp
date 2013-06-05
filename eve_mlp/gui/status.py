@@ -21,7 +21,7 @@ class CommonIni(object):
         cr = SafeConfigParser()
         try:
             cr.read(path + "/common.ini")
-            self.build = cr.get("main", "version")
+            self.version = cr.get("main", "version")
             self.build = cr.get("main", "build")
         except:
             self.version = None
@@ -32,6 +32,7 @@ class StatusPanel(wx.Panel):
     def __init__(self, parent, main):
         wx.Panel.__init__(self, parent)
 
+        # fetch data
         path2ver = {}
         for account in main.config.launches:
             ci = CommonIni(account.gamepath)
@@ -50,19 +51,36 @@ class StatusPanel(wx.Panel):
             except Exception as e:
                 serv2ver[name] = "Error (%s)" % e
 
-        box = wx.FlexGridSizer(0, 2, 2, 2)
-        box.AddGrowableCol(0)
-        box.AddGrowableCol(1)
+        # client group
+        client_grid = wx.FlexGridSizer(0, 2, 2, 2)
+        client_grid.AddGrowableCol(0)
+        client_grid.AddGrowableCol(1)
 
-        self.client_ver_lbl = wx.StaticText(self, label="Client Versions")
-        self.client_ver_box = wx.StaticText(self, label="\n".join([k + ": " + str(v) for k, v in path2ver.items()]))
-        self.server_ver_lbl = wx.StaticText(self, label="Server Versions")
-        self.server_ver_box = wx.StaticText(self, label="\n".join([k + ": " + str(v) for k, v in serv2ver.items()]))
+        for k, v in path2ver.items():
+            client_grid.Add(wx.StaticText(self, label=k+":"), 0, wx.EXPAND)
+            client_grid.Add(wx.StaticText(self, label=v), 1, wx.EXPAND)
+            #client_grid.Add(wx.Button(self, label="Update"), 0, wx.EXPAND)
 
-        box.Add(self.client_ver_lbl, 0, wx.EXPAND)
-        box.Add(self.client_ver_box, 1, wx.EXPAND)
-        box.Add(self.server_ver_lbl, 0, wx.EXPAND)
-        box.Add(self.server_ver_box, 1, wx.EXPAND)
+        # server group
+        server_grid = wx.FlexGridSizer(0, 2, 2, 2)
+        server_grid.AddGrowableCol(1)
+
+        for k, v in serv2ver.items():
+            server_grid.Add(wx.StaticText(self, label=k+":"), 0, wx.EXPAND)
+            server_grid.Add(wx.StaticText(self, label=v), 1, wx.EXPAND)
+
+        # put client and server groups onto the panel
+        box = wx.BoxSizer(wx.VERTICAL)
+
+        client_box = wx.StaticBoxSizer(wx.StaticBox(self, label="Client Status"), wx.VERTICAL)
+        client_box.Add(client_grid, 1, wx.EXPAND)
+        box.Add(client_box, 0, wx.EXPAND)
+
+        server_box = wx.StaticBoxSizer(wx.StaticBox(self, label="Server Status"), wx.VERTICAL)
+        server_box.Add(server_grid, 1, wx.EXPAND)
+        box.Add(server_box, 0, wx.EXPAND)
 
         self.SetSizer(box)
+
+        # go
         self.Layout()
