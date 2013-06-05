@@ -120,6 +120,8 @@ class LaunchConfigPanel(wx.Panel):
                 self.launch_config.console = evt.IsChecked()
             self.Bind(wx.EVT_CHECKBOX, toggle_console, self.console)
             grid.Add(self.console, 1, wx.EXPAND)
+        else:
+            self.console = None
 
         box.Add(grid, 1, wx.EXPAND)
         self.SetSizer(box)
@@ -144,6 +146,9 @@ class LaunchConfigPanel(wx.Panel):
             self.serverid.Select(2)
         else:
             self.serverid.Select(0)
+
+        if self.console:
+            self.console.SetValue(launch_config.console)
 
 
 class ConfigPanel(wx.Panel):
