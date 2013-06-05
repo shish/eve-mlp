@@ -26,6 +26,10 @@ def get_spec():
         ("LICENSE.txt", "LICENSE.txt", "DATA"),
     ]
 
+    bin_ext = ""
+    if os_type == "Windows":
+        bin_ext = ".exe"
+
     return textwrap.dedent("""
         # GUI spec
         a = Analysis(['main_gui.py'])
@@ -36,11 +40,11 @@ def get_spec():
             a.binaries,
             a.zipfiles,
             a.datas + %(gui_data)r,
-            name=os.path.join('dist', 'eve-gmlp'),
+            name=os.path.join('dist', 'eve-gmlp%(bin_ext)s'),
             debug=False,
             strip=None,
             upx=True,
-            console=True,
+            console=False,
             icon='icon.ico'
         )
         app = BUNDLE(
@@ -56,7 +60,7 @@ def get_spec():
             a.binaries,
             a.zipfiles,
             a.datas,
-            name=os.path.join('dist', 'eve-mlp'),
+            name=os.path.join('dist', 'eve-mlp%(bin_ext)s'),
             debug=False,
             strip=None,
             upx=True,
@@ -65,6 +69,7 @@ def get_spec():
         )
     """.rstrip()) % {
         "gui_data": gui_data,
+        "bin_ext": bin_ext,
     }
 
 
@@ -111,11 +116,11 @@ def package(version):
 
     if os_type == "Windows":
         zip = zipfile.ZipFile("eve-mlp-%s.zip" % version, "w")
-        zip.write("eve-mlp")
+        zip.write("eve-mlp.exe")
         zip.close()
 
         zip = zipfile.ZipFile("eve-gmlp-%s.zip" % version, "w")
-        zip.write("eve-gmlp")
+        zip.write("eve-gmlp.exe")
         zip.close()
 
 
