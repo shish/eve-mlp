@@ -3,7 +3,7 @@ import os
 import logging
 import platform
 
-from eve_mlp.common import LaunchConfig
+from eve_mlp.common import LaunchConfig, servers
 
 
 log = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ class LaunchConfigPanel(wx.Panel):
         box = wx.StaticBoxSizer(self.box_label, wx.VERTICAL)
         grid = wx.FlexGridSizer(0, 2, 2, 2)
         grid.AddGrowableCol(1)
+        grid.SetFlexibleDirection(wx.HORIZONTAL)
 
         if not default:
             grid.Add(wx.StaticText(self, wx.ID_ANY, "Setup Name"), 0, wx.ALIGN_CENTER_VERTICAL)
@@ -103,7 +104,7 @@ class LaunchConfigPanel(wx.Panel):
         grid.Add(self.gamepath, 1, wx.EXPAND)
 
         grid.Add(wx.StaticText(self, wx.ID_ANY, "Server"), 0, wx.ALIGN_CENTER_VERTICAL)
-        self.serverid = wx.ComboBox(self, choices=["(Default)", "Tranquility", "Singularity"], style=wx.CB_DROPDOWN|wx.CB_READONLY)
+        self.serverid = wx.ComboBox(self, choices=["(Default)", ] + [s.name for s in servers], style=wx.CB_DROPDOWN|wx.CB_READONLY)
         def set_serverid(evt):
             s = self.serverid.GetValue()
             if s == "(Default)":

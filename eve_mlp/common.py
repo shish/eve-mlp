@@ -11,6 +11,18 @@ config_path = os.path.expanduser("~/.config/eve-mlp.conf")
 log = logging.getLogger(__name__)
 
 
+class Server(object):
+    def __init__(self, name, addr, port):
+        self.name = name
+        self.addr = addr
+        self.port = port
+
+servers = [
+    Server("Tranquility", "87.237.38.200", 26000),
+    Server("Singularity", "87.237.38.50", 26000),
+]
+
+
 class LaunchConfig(dict):
     """
     Holds the settings for a given launch configuration.
