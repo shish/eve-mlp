@@ -27,7 +27,6 @@ class CommonIni(object):
 class StatusPanel(wx.Panel):
     def __init__(self, parent, main):
         wx.Panel.__init__(self, parent)
-        self.main = main
 
         # client group
         self.client_grid = wx.GridSizer(0, 3, 2, 2)
@@ -78,6 +77,7 @@ class StatusPanel(wx.Panel):
             try:
                 logging.info("Getting version info from %s" % server.name)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(3)
                 s.connect((server.addr, server.port))
                 data = s.recv(4096)
                 s.close()
