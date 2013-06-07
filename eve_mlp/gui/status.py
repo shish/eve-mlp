@@ -30,13 +30,14 @@ class StatusPanel(wx.Panel):
         self.main = main
 
         # client group
-        self.client_grid = wx.FlexGridSizer(0, 2, 2, 2)
-        self.client_grid.AddGrowableCol(0)
-        self.client_grid.AddGrowableCol(1)
+        self.client_grid = wx.GridSizer(0, 3, 2, 2)
+        #self.client_grid.AddGrowableCol(0)
+        #self.client_grid.AddGrowableCol(1)
+        #self.client_grid.AddGrowableCol(2)
 
         # server group
-        self.server_grid = wx.FlexGridSizer(0, 2, 2, 2)
-        self.server_grid.AddGrowableCol(1)
+        self.server_grid = wx.GridSizer(0, 3, 2, 2)
+        #self.server_grid.AddGrowableCol(1)
 
         # refresh button
         refresh = wx.Button(self, label="Refresh")
@@ -65,12 +66,14 @@ class StatusPanel(wx.Panel):
 
     def OnRefresh(self, evt):
         # fetch data
-        path2ver = {}
+        game_versions = {}
         for account in self.main.config.launches:
             ci = CommonIni(account.gamepath)
-            path2ver[account.gamepath] = "%s.%s" % (ci.version, ci.build)
+            game_versions[account.gamepath] = "%s.%s" % (ci.version, ci.build)
 
-        serv2ver = {}
+        all_servers_ok = True
+        known_versions = {}
+        server_versions = {}
         for server in servers:
             try:
                 logging.info("Getting version info from %s" % server.name)
@@ -80,19 +83,37 @@ class StatusPanel(wx.Panel):
                 s.close()
 
                 pkt = get_packet(StringIO(data))
-                serv2ver[server.name] = "%.2f.%d (%d online)" % (pkt["version"], pkt["build"], pkt["online"])
+                version = "%.2f.%d" % (pkt["version"], pkt["build"])
+                status = "%d online" % pkt["online"]
+                server_versions[server.name] = (version, status)
+
+                if version not in known_versions:
+                    known_versions[version] = server.name
             except Exception as e:
-                serv2ver[server.name] = "Error (%s)" % e
+                server_versions[server.name] = (
+                    ("?"),
+                    ("Error (%s)" % e)
+                )
+                all_servers_ok = False
 
         self.client_grid.Clear(True)
-        for k, v in path2ver.items():
-            self.client_grid.Add(wx.StaticText(self, label=k+":"), 0, wx.EXPAND)
-            self.client_grid.Add(wx.StaticText(self, label=v), 1, wx.EXPAND)
+        for path, version in game_versions.items():
+            self.client_grid.Add(wx.StaticText(self, label=path+":"), 0, wx.EXPAND)
+            self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
             #client_grid.Add(wx.Button(self, label="Update"), 0, wx.EXPAND)
 
+            if version in known_versions:
+                self.client_grid.Add(wx.StaticText(self, label="Ok (%s)" % known_versions[version]), 1, wx.EXPAND)
+            else:
+                if all_servers_ok:
+                    self.client_grid.Add(wx.StaticText(self, label="Needs update"), 1, wx.EXPAND)
+                else:
+                    self.client_grid.Add(wx.StaticText(self, label="Needs update?"), 1, wx.EXPAND)
+
         self.server_grid.Clear(True)
-        for k, v in serv2ver.items():
-            self.server_grid.Add(wx.StaticText(self, label=k+":"), 0, wx.EXPAND)
-            self.server_grid.Add(wx.StaticText(self, label=v), 1, wx.EXPAND)
+        for server, (version, status) in server_versions.items():
+            self.server_grid.Add(wx.StaticText(self, label=server+":"), 2, wx.EXPAND)
+            self.server_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
+            self.server_grid.Add(wx.StaticText(self, label=status), 1, wx.EXPAND)
 
         self.Layout()
