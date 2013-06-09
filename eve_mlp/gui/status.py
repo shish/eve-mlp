@@ -62,8 +62,6 @@ class StatusPanel(wx.Panel):
         # go
         self.Layout()
 
-        self.OnRefresh(None)
-
     def OnRefresh(self, evt):
         # fetch data
         self.game_paths = []
@@ -100,6 +98,7 @@ class StatusPanel(wx.Panel):
                 all_servers_ok = False
 
         self.client_grid.Clear(True)
+        update_required = False
         for n, (path, version) in enumerate(game_versions.items()):
             self.client_grid.Add(wx.StaticText(self, label=path+":"), 0, wx.EXPAND)
             self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
@@ -109,6 +108,7 @@ class StatusPanel(wx.Panel):
             else:
                 if all_servers_ok:
                     label = "Needs update"
+                    update_required = True
                 else:
                     label = "Needs update?"
                 update = wx.Button(self, n, label=label)
@@ -122,6 +122,9 @@ class StatusPanel(wx.Panel):
             self.server_grid.Add(wx.StaticText(self, label=status), 1, wx.EXPAND)
 
         self.Layout()
+
+        if update_required:
+            self.main.tabs.SetSelection(2)
 
     def OnUpdate(self, evt):
         try:

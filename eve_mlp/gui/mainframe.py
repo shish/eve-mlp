@@ -119,6 +119,8 @@ class MainFrame(wx.Frame):
             log.exception("Failed to create tray icon:")
             self.icon = None
 
+        self.status_panel.OnRefresh(None)
+
         if show:
             self.Show(True)
 
