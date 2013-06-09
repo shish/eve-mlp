@@ -110,7 +110,8 @@ class StatusPanel(wx.Panel):
             self.client_grid.Add(wx.StaticText(self, label=label), 0, wx.EXPAND)
             self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
 
-            if version == server_versions[launch.serverid.title()]:
+            print version, server_versions
+            if version == server_versions[launch.serverid.title()][0]:
                 self.client_grid.Add(wx.StaticText(self, label="Ok"), 1, wx.EXPAND)
             else:
                 if all_servers_ok:
