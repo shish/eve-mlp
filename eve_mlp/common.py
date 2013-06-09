@@ -229,10 +229,10 @@ def launch(config, launch_config, launch_token):
     return subprocess.Popen(" ".join(cmd), shell=True)
 
 
-def update(path):
-    log.info("Updating %s" % path)
+def update(launch_config):
+    log.info("Updating %s" % launch_config.gamepath)
 
-    exepath = os.path.join(path, "launcher", "launcher.exe")
+    exepath = os.path.join(launch_config.gamepath, "launcher", "launcher.exe")
 
     if not os.path.exists(exepath):
         raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
@@ -241,10 +241,16 @@ def update(path):
 
     # platform specific pre-binary bits
     if platform.system() == "Linux":
-        cmd.append("wine")
+        cmd.append(launch_config.winecmd)
+        if launch_config.wineflags:
+            cmd.append(launch_config.wineflags)
 
     # run the app
     cmd.append('"%s"' % exepath)
+
+    # app flags
+    if launch_config.serverid == "singularity":
+        cmd.append("/server:Singularity")
 
     # go!
     return subprocess.Popen(" ".join(cmd), shell=True)

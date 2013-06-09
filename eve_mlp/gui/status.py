@@ -62,18 +62,10 @@ class StatusPanel(wx.Panel):
         # go
         self.Layout()
 
-    def OnRefresh(self, evt):
-        # fetch data
-        self.game_paths = []
-        game_versions = {}
-        for account in self.main.config.launches:
-            ci = CommonIni(account.gamepath)
-            game_versions[account.gamepath] = "%s.%s" % (ci.version, ci.build)
-            self.game_paths.append(account.gamepath)
-
+    def get_server_versions(self):
         all_servers_ok = True
-        known_versions = {}
         server_versions = {}
+
         for server in servers:
             try:
                 logging.info("Getting version info from %s" % server.name)
@@ -87,9 +79,6 @@ class StatusPanel(wx.Panel):
                 version = "%.2f.%d" % (pkt["version"], pkt["build"])
                 status = "%d online" % pkt["online"]
                 server_versions[server.name] = (version, status)
-
-                if version not in known_versions:
-                    known_versions[version] = server.name
             except Exception as e:
                 server_versions[server.name] = (
                     ("?"),
@@ -97,14 +86,32 @@ class StatusPanel(wx.Panel):
                 )
                 all_servers_ok = False
 
+        return all_servers_ok, server_versions
+
+    def get_client_version(self, account):
+        if not account._gamepath:
+            return None
+        else:
+            ci = CommonIni(account.gamepath)
+            return "%s.%s" % (ci.version, ci.build)
+
+    def OnRefresh(self, evt):
+        all_servers_ok, server_versions = self.get_server_versions()
+
         self.client_grid.Clear(True)
         update_required = False
-        for n, (path, version) in enumerate(game_versions.items()):
-            self.client_grid.Add(wx.StaticText(self, label=path+":"), 0, wx.EXPAND)
+        for n, launch in enumerate([self.main.config.defaults, ] + self.main.config.launches, -1):
+            version = self.get_client_version(launch)
+
+            if version == None:
+                continue
+
+            label = "%s (%s):" % (launch.confname or "Default", launch.serverid.title())
+            self.client_grid.Add(wx.StaticText(self, label=label), 0, wx.EXPAND)
             self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
 
-            if version in known_versions:
-                self.client_grid.Add(wx.StaticText(self, label="Ok (%s)" % known_versions[version]), 1, wx.EXPAND)
+            if version == server_versions[launch.serverid.title()]:
+                self.client_grid.Add(wx.StaticText(self, label="Ok"), 1, wx.EXPAND)
             else:
                 if all_servers_ok:
                     label = "Needs update"
@@ -128,6 +135,12 @@ class StatusPanel(wx.Panel):
 
     def OnUpdate(self, evt):
         try:
-            update(self.game_paths[evt.GetId()])
+            lid = evt.GetId()
+            log.info("Launching launch ID %d" % lid)
+            if lid == -1:
+                launch = self.main.config.defaults
+            else:
+                launch = self.main.config.launches[lid]
+            update(launch)
         except Exception as e:
             wx.MessageBox(str(e), "Update Failed", wx.OK | wx.ICON_ERROR)
