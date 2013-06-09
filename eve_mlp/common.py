@@ -196,8 +196,10 @@ class LaunchFailed(Exception):
 def launch(config, launch_config, launch_token):
     log.info("Launching eve")
 
-    if not os.path.exists(os.path.join(launch_config.gamepath, "bin", "ExeFile.exe")):
-        raise LaunchFailed("Can't find bin/ExeFile.exe, is the game folder set correctly?")
+    exepath = os.path.join(launch_config.gamepath, "bin", "ExeFile.exe")
+
+    if not os.path.exists(exepath):
+        raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
 
     cmd = []
 
@@ -210,7 +212,7 @@ def launch(config, launch_config, launch_token):
             cmd.append(launch_config.wineflags)
 
     # run the app
-    cmd.append('"' + os.path.join(launch_config.gamepath, "bin", "ExeFile.exe") + '"')
+    cmd.append('"%s"' % exepath)
     if launch_token:
         cmd.append("/ssoToken=" + launch_token)
 
@@ -222,6 +224,27 @@ def launch(config, launch_config, launch_token):
 
     if launch_config.serverid == "singularity":
         cmd.append("/server:Singularity")
+
+    # go!
+    return subprocess.Popen(" ".join(cmd), shell=True)
+
+
+def update(path):
+    log.info("Updating %s" % path)
+
+    exepath = os.path.join(path, "launcher", "launcher.exe")
+
+    if not os.path.exists(exepath):
+        raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
+
+    cmd = []
+
+    # platform specific pre-binary bits
+    if platform.system() == "Linux":
+        cmd.append("wine")
+
+    # run the app
+    cmd.append('"%s"' % exepath)
 
     # go!
     return subprocess.Popen(" ".join(cmd), shell=True)

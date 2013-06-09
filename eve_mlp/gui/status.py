@@ -5,7 +5,7 @@ import socket
 from ConfigParser import SafeConfigParser
 from StringIO import StringIO
 
-from eve_mlp.common import LaunchConfig, servers
+from eve_mlp.common import LaunchConfig, servers, update, LaunchFailed
 from eve_mlp.protocol import get_packet
 
 
@@ -27,6 +27,7 @@ class CommonIni(object):
 class StatusPanel(wx.Panel):
     def __init__(self, parent, main):
         wx.Panel.__init__(self, parent)
+        self.main = main
 
         # client group
         self.client_grid = wx.GridSizer(0, 3, 2, 2)
@@ -65,10 +66,12 @@ class StatusPanel(wx.Panel):
 
     def OnRefresh(self, evt):
         # fetch data
+        self.game_paths = []
         game_versions = {}
         for account in self.main.config.launches:
             ci = CommonIni(account.gamepath)
             game_versions[account.gamepath] = "%s.%s" % (ci.version, ci.build)
+            self.game_paths.append(account.gamepath)
 
         all_servers_ok = True
         known_versions = {}
@@ -97,18 +100,20 @@ class StatusPanel(wx.Panel):
                 all_servers_ok = False
 
         self.client_grid.Clear(True)
-        for path, version in game_versions.items():
+        for n, (path, version) in enumerate(game_versions.items()):
             self.client_grid.Add(wx.StaticText(self, label=path+":"), 0, wx.EXPAND)
             self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
-            #client_grid.Add(wx.Button(self, label="Update"), 0, wx.EXPAND)
 
             if version in known_versions:
                 self.client_grid.Add(wx.StaticText(self, label="Ok (%s)" % known_versions[version]), 1, wx.EXPAND)
             else:
                 if all_servers_ok:
-                    self.client_grid.Add(wx.StaticText(self, label="Needs update"), 1, wx.EXPAND)
+                    label = "Needs update"
                 else:
-                    self.client_grid.Add(wx.StaticText(self, label="Needs update?"), 1, wx.EXPAND)
+                    label = "Needs update?"
+                update = wx.Button(self, n, label=label)
+                self.Bind(wx.EVT_BUTTON, self.OnUpdate, update)
+                self.client_grid.Add(update, 1, wx.EXPAND)
 
         self.server_grid.Clear(True)
         for server, (version, status) in server_versions.items():
@@ -117,3 +122,9 @@ class StatusPanel(wx.Panel):
             self.server_grid.Add(wx.StaticText(self, label=status), 1, wx.EXPAND)
 
         self.Layout()
+
+    def OnUpdate(self, evt):
+        try:
+            update(self.game_paths[evt.GetId()])
+        except Exception as e:
+            wx.MessageBox(str(e), "Update Failed", wx.OK | wx.ICON_ERROR)
