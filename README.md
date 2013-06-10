@@ -47,6 +47,9 @@ As an alternative to many "config" commands, you might find it easier to run
 eve-mlp once to have it generate ~/.config/eve-mlp.conf, and then edit that
 with a text editor (Presuming you're comfortable editing JSON by hand).
 
+Or you can use the GUI once to set your accounts up how you want, then use
+the CLI for launching~
+
 Shameless Plug
 --------------
 Send ISK to Shish Tukay if you want to encourage more work on this :)
