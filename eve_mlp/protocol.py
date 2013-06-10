@@ -50,6 +50,6 @@ def get_packet(stream):
         pkt["name"] = get_thing(stream)
 
     else:
-        print "Unknown packet type", pkt_type
+        raise Exception("Unknown packet type: %s" % pkt_type)
 
     return pkt

@@ -100,7 +100,7 @@ class StatusPanel(wx.Panel):
 
         self.client_grid.Clear(True)
         update_required = False
-        for n, launch in enumerate([self.main.config.defaults, ] + self.main.config.launches, -1):
+        for n, launch in enumerate([self.main.config.defaults, ] + self.main.config.launches):
             version = self.get_client_version(launch)
 
             if version == None:
@@ -110,7 +110,6 @@ class StatusPanel(wx.Panel):
             self.client_grid.Add(wx.StaticText(self, label=label), 0, wx.EXPAND)
             self.client_grid.Add(wx.StaticText(self, label=version), 1, wx.EXPAND)
 
-            print version, server_versions
             if version == server_versions[launch.serverid.title()][0]:
                 self.client_grid.Add(wx.StaticText(self, label="Ok"), 1, wx.EXPAND)
             else:
@@ -136,7 +135,7 @@ class StatusPanel(wx.Panel):
 
     def OnUpdate(self, evt):
         try:
-            lid = evt.GetId()
+            lid = evt.GetId() - 1
             log.info("Launching launch ID %d" % lid)
             if lid == -1:
                 launch = self.main.config.defaults
