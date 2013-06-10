@@ -15,12 +15,15 @@ Features
   - Double click to hide main window
   - Right click -> launch character
 
-Run
----
+Run (GUI)
+---------
 ```
-Run the gui:
-    eve-gmlp
-    
+eve-gmlp
+```
+
+Run (CLI)
+---------
+```
 Set the default game path:
     eve-mlp config --gamepath /home/bob/Games/EVE
 
@@ -39,6 +42,10 @@ Launch multiple alts at once:
 Launch all of your selected alts in one go:
     eve-mlp launch
 ```
+
+As an alternative to many "config" commands, you might find it easier to run
+eve-mlp once to have it generate ~/.config/eve-mlp.conf, and then edit that
+with a text editor (Presuming you're comfortable editing JSON by hand).
 
 Shameless Plug
 --------------
