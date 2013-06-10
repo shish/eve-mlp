@@ -15,6 +15,7 @@ from eve_mlp.gui.trayicon import TrayIcon
 from eve_mlp.gui.launcher import LauncherPanel
 from eve_mlp.gui.news import NewsPanel
 from eve_mlp.gui.config import ConfigPanel
+from eve_mlp.gui.status import StatusPanel
 
 
 log = logging.getLogger(__name__)
@@ -99,10 +100,12 @@ class MainFrame(wx.Frame):
         # add content to tabs
         self.news_panel = NewsPanel(self.tabs, "http://code.shishnet.org/eve-mlp/news.html")
         self.config_panel = ConfigPanel(self.tabs, self)
+        self.status_panel = StatusPanel(self.tabs, self)
         self.help_panel = NewsPanel(self.tabs, resource("help.html"))
 
         self.tabs.AddPage(self.news_panel, "MLP News")
         self.tabs.AddPage(self.config_panel, "Settings")
+        self.tabs.AddPage(self.status_panel, "Status")
         self.tabs.AddPage(self.help_panel, "Help")
 
         # show the window and tray icon (if desired)
@@ -115,6 +118,8 @@ class MainFrame(wx.Frame):
         except Exception as e:
             log.exception("Failed to create tray icon:")
             self.icon = None
+
+        self.status_panel.OnRefresh(None)
 
         if show:
             self.Show(True)

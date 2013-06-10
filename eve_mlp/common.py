@@ -11,6 +11,18 @@ config_path = os.path.expanduser("~/.config/eve-mlp.conf")
 log = logging.getLogger(__name__)
 
 
+class Server(object):
+    def __init__(self, name, addr, port):
+        self.name = name
+        self.addr = addr
+        self.port = port
+
+servers = [
+    Server("Tranquility", "87.237.38.200", 26000),
+    Server("Singularity", "87.237.38.50", 26000),
+]
+
+
 class LaunchConfig(dict):
     """
     Holds the settings for a given launch configuration.
@@ -184,8 +196,10 @@ class LaunchFailed(Exception):
 def launch(config, launch_config, launch_token):
     log.info("Launching eve")
 
-    if not os.path.exists(os.path.join(launch_config.gamepath, "bin", "ExeFile.exe")):
-        raise LaunchFailed("Can't find bin/ExeFile.exe, is the game folder set correctly?")
+    exepath = os.path.join(launch_config.gamepath, "bin", "ExeFile.exe")
+
+    if not os.path.exists(exepath):
+        raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
 
     cmd = []
 
@@ -198,7 +212,7 @@ def launch(config, launch_config, launch_token):
             cmd.append(launch_config.wineflags)
 
     # run the app
-    cmd.append('"' + os.path.join(launch_config.gamepath, "bin", "ExeFile.exe") + '"')
+    cmd.append('"%s"' % exepath)
     if launch_token:
         cmd.append("/ssoToken=" + launch_token)
 
@@ -208,6 +222,33 @@ def launch(config, launch_config, launch_token):
     else:
         cmd.append("/noconsole")
 
+    if launch_config.serverid == "singularity":
+        cmd.append("/server:Singularity")
+
+    # go!
+    return subprocess.Popen(" ".join(cmd), shell=True)
+
+
+def update(launch_config):
+    log.info("Updating %s" % launch_config.gamepath)
+
+    exepath = os.path.join(launch_config.gamepath, "launcher", "launcher.exe")
+
+    if not os.path.exists(exepath):
+        raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
+
+    cmd = []
+
+    # platform specific pre-binary bits
+    if platform.system() == "Linux":
+        cmd.append(launch_config.winecmd)
+        if launch_config.wineflags:
+            cmd.append(launch_config.wineflags)
+
+    # run the app
+    cmd.append('"%s"' % exepath)
+
+    # app flags
     if launch_config.serverid == "singularity":
         cmd.append("/server:Singularity")
 

@@ -16,7 +16,12 @@ class LoginFailed(Exception):
 
 def do_login(username, password):
     log.debug("Using cached SSO login URL")
+
+    #login_action_url = "https://sisilogin.testeveonline.com/oauth/authorize/?" + \
+    #                   "client_id=eveLauncherTQ&lang=en&response_type=token&" + \
+    #                   "redirect_uri=https://sisilogin.testeveonline.com/launcher?client_id=eveLauncherTQ&scope=eveClientToken"
     #login_action_url = get_login_action_url(LAUNCHER_INFO)
+    
     login_action_url = "https://login.eveonline.com/Account/LogOn?" + \
         "ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26" + \
         "redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
