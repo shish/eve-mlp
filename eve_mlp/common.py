@@ -232,7 +232,7 @@ def launch(config, launch_config, launch_token):
 def update(launch_config):
     log.info("Updating %s" % launch_config.gamepath)
 
-    exepath = os.path.join(launch_config.gamepath, "launcher", "launcher.exe")
+    exepath = os.path.join(launch_config.gamepath, "repair.exe")
 
     if not os.path.exists(exepath):
         raise LaunchFailed("Can't find %s, is the game folder set correctly?" % exepath)
