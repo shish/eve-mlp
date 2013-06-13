@@ -206,7 +206,7 @@ def launch(config, launch_config, launch_token):
     # platform specific pre-binary bits
     if config.settings.get("dry"):
         cmd.append("echo")
-    if platform.system() == "Linux":
+    if launch_config.winecmd:
         cmd.append(launch_config.winecmd)
         if launch_config.wineflags:
             cmd.append(launch_config.wineflags)
@@ -240,7 +240,7 @@ def update(launch_config):
     cmd = []
 
     # platform specific pre-binary bits
-    if platform.system() == "Linux":
+    if launch_config.winecmd:
         cmd.append(launch_config.winecmd)
         if launch_config.wineflags:
             cmd.append(launch_config.wineflags)

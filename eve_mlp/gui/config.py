@@ -124,6 +124,24 @@ class LaunchConfigPanel(wx.Panel):
         else:
             self.console = None
 
+        if platform.system() != "Windows":
+            grid.Add(wx.StaticText(self, wx.ID_ANY, "Wine Command"), 0, wx.ALIGN_CENTER_VERTICAL)
+            self.winecmd = wx.TextCtrl(self)
+            def set_winecmd(evt):
+                self.launch_config.winecmd = self.winecmd.GetValue() or None
+            self.Bind(wx.EVT_TEXT, set_winecmd, self.winecmd)
+            grid.Add(self.winecmd, 1, wx.EXPAND)
+
+            grid.Add(wx.StaticText(self, wx.ID_ANY, "Wine Flags"), 0, wx.ALIGN_CENTER_VERTICAL)
+            self.wineflags = wx.TextCtrl(self)
+            def set_wineflags(evt):
+                self.launch_config.wineflags = self.wineflags.GetValue() or None
+            self.Bind(wx.EVT_TEXT, set_wineflags, self.wineflags)
+            grid.Add(self.wineflags, 1, wx.EXPAND)
+        else:
+            self.winecmd = None
+            self.wineflags = None
+
         box.Add(grid, 1, wx.EXPAND)
         self.SetSizer(box)
         self.Layout()
@@ -150,6 +168,12 @@ class LaunchConfigPanel(wx.Panel):
 
         if self.console:
             self.console.SetValue(launch_config.console)
+
+        if self.winecmd:
+            self.winecmd.SetValue(launch_config._winecmd or "")
+
+        if self.wineflags:
+            self.wineflags.SetValue(launch_config._wineflags or "")
 
 
 class ConfigPanel(wx.Panel):
