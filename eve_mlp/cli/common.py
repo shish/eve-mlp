@@ -14,6 +14,4 @@ def get_launch_config(config, name):
         if launch_config.confname == name:
             return launch_config
 
-    raise Exception("No LaunchConfig named %s" % name)
-
-
+    raise UserError("No LaunchConfig named %s" % name)
