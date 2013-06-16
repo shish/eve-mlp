@@ -42,13 +42,12 @@ class TestCommon(unittest2.TestCase):
 
     @patch("os.path.exists")
     @patch("subprocess.Popen")
-    @patch("platform.system")
-    def test_launch_ok(self, os_type, popen, exists):
-        os_type.return_value = "generic"
+    def test_launch_ok(self, popen, exists):
         exists.return_value = True
 
         co = Config()
         co.defaults.gamepath = "/home/games/EVE Online"
+        co.defaults.winecmd = None
         lc = LaunchConfig(co.defaults)
         to = "TOKEN"
         launch(co, lc, to)
@@ -57,9 +56,7 @@ class TestCommon(unittest2.TestCase):
 
     @patch("os.path.exists")
     @patch("subprocess.Popen")
-    @patch("platform.system")
-    def test_launch_badpath(self, os_type, popen, exists):
-        os_type.return_value = "generic"
+    def test_launch_badpath(self, popen, exists):
         exists.return_value = False
 
         co = Config()
